@@ -1,0 +1,5 @@
+hanlp==2.0.0a44
+# for NLP support
+peewee==3.13.3
+# for ORM support
+
