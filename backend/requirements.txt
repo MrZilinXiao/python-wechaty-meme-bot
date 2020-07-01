@@ -3,3 +3,12 @@ hanlp==2.0.0a44
 peewee==3.13.3
 # for ORM support
 
+Pillow==7.1.2
+tqdm
+
+# for Chineseocr_lite
+scipy
+numpy
+opencv-python
+Cython
+torch==1.2.0

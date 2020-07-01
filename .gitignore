@@ -1,4 +1,5 @@
 .idea/
+backend/meme/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
