@@ -23,4 +23,4 @@ class Meme(BaseModel):
     title = CharField(verbose_name='表情标题', max_length=256)
     tag = CharField(verbose_name='表情标签，以`,`分割', max_length=512, default='')
     feature = TextField(verbose_name='表情特征（numpy array序列化后）')
-    clusterType = ForeignKeyField(MemeType, backref='Meme')
+    clusterType = ForeignKeyField(MemeType, backref='Meme', on_delete='NO ACTION', null=True)

@@ -35,7 +35,7 @@ elif crnn_type == "full_dense":
 # crnn_model_path = os.path.join(father_path,"models/ocr-lstm.pth")
 
 # from crnn.keys import  alphabet
-from crnn.keys import alphabetChinese as alphabet
+from backend.chineseocr_lite.crnn.keys import alphabetChinese as alphabet
 
 # angle_class相关
 lable_map_dict = {0: "hengdao", 1: "hengzhen", 2: "shudao", 3: "shuzhen"}  # hengdao: 文本行横向倒立 其他类似

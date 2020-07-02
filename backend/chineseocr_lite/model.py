@@ -1,8 +1,8 @@
-from config import *
-from crnn import FullCrnn, LiteCrnn, CRNNHandle
-from psenet import PSENet, PSENetHandel
-from angle_class import AangleClassHandle, shufflenet_v2_x0_5
-from utils import draw_bbox, crop_rect
+from backend.chineseocr_lite.config import *
+from backend.chineseocr_lite.crnn import FullCrnn, LiteCrnn, CRNNHandle
+from backend.chineseocr_lite.psenet import PSENet, PSENetHandel
+from backend.chineseocr_lite.angle_class import AangleClassHandle, shufflenet_v2_x0_5
+from backend.chineseocr_lite.utils import draw_bbox, crop_rect
 from PIL import Image
 import numpy as np
 import cv2
@@ -99,8 +99,8 @@ def text_predict(img):
     
     preds, boxes_list, rects_re, t = text_handle.predict(img, long_size=pse_long_size)
     
-    img2 = draw_bbox(img, boxes_list, color=(0, 255, 0))
-    cv2.imwrite("debug_im/draw.jpg", img2)
+    # img2 = draw_bbox(img, boxes_list, color=(0, 255, 0))
+    # cv2.imwrite("debug_im/draw.jpg", img2)
     
     result = crnnRec(np.array(img), rects_re)
     
