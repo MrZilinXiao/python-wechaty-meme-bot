@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
-import tensorflow.compat.v1 as tf  # using v1 while Hanlp need Tensorflow v2
+import tensorflow as tf
+import tensorflow_hub as hub
 import numpy as np
 import os
 import time
@@ -58,21 +59,3 @@ class InceptionExtractor(FeatureExtractor):
     def ndarray2bytes(array: np.ndarray) -> str:
         return base64.urlsafe_b64encode(array.tobytes())
 
-    def LoadInception(self):
-        with tf.gfile.FastGFile(self.model_path, 'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            tf.import_graph_def(graph_def=graph_def, name='')
-
-    def GetFeature(self, img_path: str):
-        img_data, img_label = self.ReadImages(img_path)
-        st_time = time.time()
-        with tf.Session() as sess:
-            # sess.run(tf.global_variables_initializer())
-            tensor = sess.graph.get_tensor_by_name(
-                'pool_3/_reshape:0')  # only use Inception as a backbone for feature extraction
-            v_vector = sess.run(tensor, feed_dict={'DecodeJpeg/contents:0': img_data[0]})  # 1x2048
-            v_vector = np.array(v_vector)
-            # print(v_vector.dtype, v_vector.shape)
-            Log.info("Feature Extraction took " + str(time.time() - st_time) + ' seconds.')
-            return InceptionExtractor.ndarray2bytes(v_vector)
