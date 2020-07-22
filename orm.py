@@ -5,6 +5,7 @@ ORM Abstraction Module for peewee
 from peewee import *
 
 db = SqliteDatabase('test.db')
+db.connect()
 
 
 class BaseModel(Model):
