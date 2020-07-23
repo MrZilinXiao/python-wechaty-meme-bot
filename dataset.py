@@ -42,7 +42,8 @@ class MemeDataset(Dataset):
                         invalid_cnt += 1
                         continue  # skip those already in database
                     if not name.lower().endswith(allow_img_extensions):
-                        Log.info(name + " not supported, only " + str(allow_img_extensions) + " extensions supported for now.")
+                        Log.info(name + " not supported, only " + str(
+                            allow_img_extensions) + " extensions supported for now.")
                         invalid_cnt += 1
                         continue
                     self.meme_list.append((img_path, title))

@@ -20,32 +20,41 @@ import sys
 import os
 import numpy as np
 import time
+import torch
+import peewee
 
-# Init Modules
-hanlp = HanlpWrapper()
-ocr = OCRWrapper('mobilenetv2')
-extractor = InceptionExtractor(allow_img_extensions, 512)
+if __name__ == '__main__':
+    # Init Modules
+    hanlp = HanlpWrapper()
+    ocr = OCRWrapper('mobilenetv2')
+    extractor = InceptionExtractor(allow_img_extensions, 16)
 
-meme_path = sys.argv[1]
-extractor.init_dataloader(meme_path)
-for k, batched_data in enumerate(extractor.data_loader):
-    st_time = time.time()
-    m_img = Variable(batched_data['m_img'])  # [batch_size, 3, 299, 299]
-    title = batched_data['title']
-    meme_path = batched_data['meme_path']
-    v_img = extractor.get_feature(m_img)  # [batch_size, 2048]
-    for i in range(len(title)):
-        img_data = Image.open(meme_path[i])
-        img_data = np.array(img_data)
-        texts = ocr.text_predict(img_data)
-        text = ''.join(texts)
-        tags = hanlp.Tokenizer(text)
-        tags_text = ' '.join(tags)
-
-        feature_encoded = extractor.ndarray2bytes(np.array(v_img[i]))
-        Meme.create(path=meme_path[i], title=title[i], tag=tags_text, feature=feature_encoded)
-        Log.info("Import Meme with title " + title[i] + " tag " + tags_text)
-    Log.info("This batch consumes %.2f seconds..." % (time.time()-st_time))
+    meme_path = './backend/meme/'
+    extractor.init_dataloader(meme_path)
+    for k, batched_data in enumerate(extractor.data_loader):
+        st_time = time.time()
+        m_img = Variable(batched_data['m_img'])  # [batch_size, 3, 299, 299]
+        title = batched_data['title']
+        meme_path = batched_data['meme_path']
+        if torch.cuda.is_available():
+            m_img = m_img.cuda()
+        v_img = extractor.get_feature(m_img)  # [batch_size, 2048]
+        for i in range(len(title)):
+            img_data = Image.open(meme_path[i]).convert('RGB')
+            img_data = np.array(img_data)
+            texts = ocr.text_predict(img_data)
+            text = ''.join(texts)
+            tags = hanlp.Tokenizer(text)
+            tags_text = ' '.join(tags)
+            feature_vector = v_img[i].cpu().detach()
+            feature_encoded = extractor.ndarray2bytes(np.array(feature_vector))
+            try:
+                Meme.create(path=meme_path[i], title=title[i], tag=tags_text, feature=feature_encoded)
+            except peewee.IntegrityError as e:
+                Log.info(str(e))
+                continue
+            Log.info("Import Meme with title:" + title[i] + ", tag:" + tags_text + ', raw text:' + text)
+        Log.info("This batch consumes %.2f seconds..." % (time.time()-st_time))
 
 
 # Preprocess

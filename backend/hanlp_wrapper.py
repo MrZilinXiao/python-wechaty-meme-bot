@@ -1,4 +1,5 @@
 import hanlp
+from config import stop_words_path
 
 
 class HanlpWrapper(object):
@@ -7,7 +8,7 @@ class HanlpWrapper(object):
         self.stopDict = {}
         # StopWords List comes from: https://github.com/goto456/stopwords
         # Read stopwords into dict to ensure constant reference consumption
-        with open('stopwords.txt', 'r') as f:
+        with open(stop_words_path, 'r') as f:
             for word in f.readlines():
                 self.stopDict[word.strip()] = True
 
