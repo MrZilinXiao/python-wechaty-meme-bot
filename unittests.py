@@ -1,9 +1,12 @@
 import unittest
 import peewee
+import torch
 from torch.utils.data import DataLoader
 
 from orm import Meme, MemeType
-from dataset import MemeDataset
+from dataset import MemeDataset, allow_img_extensions
+from torch.autograd import Variable
+from backend.feature_extract import InceptionExtractor
 
 
 class ORMTester(unittest.TestCase):
@@ -41,6 +44,14 @@ class DatasetTester(unittest.TestCase):
             title = batched_data['title']
             meme_path = batched_data['meme_path']
             print(m_img, title, meme_path)
+
+
+class FeatureExtractorTester(unittest.TestCase):
+    def test_inception(self):
+        extractor = InceptionExtractor(allow_img_extensions, 1)
+        dummy_input = Variable(torch.randn(1, 3, 299, 299))
+        out: torch.Tensor = extractor.get_feature(dummy_input)
+        self.assertEqual(out.shape, torch.Size([1, 2048]))
 
 
 if __name__ == '__main__':
