@@ -11,6 +11,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from PIL import Image
 from backend.utils import Log
+from backend import config
 
 
 class FeatureExtractor(object):
@@ -58,7 +59,7 @@ class InceptionExtractor(FeatureExtractor, ABC):
         from dataset import MemeDataset
         self.dataset = MemeDataset(meme_path)
         self.data_loader = DataLoader(self.dataset, batch_size=self.batch_size,
-                                      shuffle=True, num_workers=1, drop_last=False)
+                                      shuffle=True, num_workers=config.num_cores, drop_last=False)
 
     def get_feature(self, img_mat: Variable):
         """
