@@ -3,6 +3,7 @@ import peewee
 import torch
 from torch.utils.data import DataLoader
 
+from backend.cosine_metric_net import CosineMetricNet
 from orm import Meme, MemeType, History
 from dataset import MemeDataset, allow_img_extensions
 from torch.autograd import Variable
@@ -54,6 +55,13 @@ class FeatureExtractorTester(unittest.TestCase):
         out: torch.Tensor = extractor.get_feature(dummy_input)
         self.assertEqual(out.shape, torch.Size([1, 2048]))
 
+    def test_cos_net(self):
+        net = CosineMetricNet()
+        input = Variable(torch.randn((100, 3, 128, 64)))
+        out = net.forward(input)
+        self.assertEqual(out.size(), torch.Size([100, 128]))
+        print(out)
+
 
 class ResponseTester(unittest.TestCase):
     def test_dispatcher(self):
@@ -69,6 +77,7 @@ class ResponseTester(unittest.TestCase):
 
         test_read_in_db()
         test_get_close_match()
+
 
 
 if __name__ == '__main__':
