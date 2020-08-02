@@ -68,7 +68,7 @@ class PSENetHandel(metaclass=SingletonType):
         self.net.eval()
     
     #
-    def predict(self, img: str, long_size: int = 640):
+    def predict(self, img: np.ndarray, long_size: int = 640):
         """
         对传入的图像进行预测，支持图像地址,opecv 读取图片，偏慢
         :param long_size:
@@ -77,6 +77,8 @@ class PSENetHandel(metaclass=SingletonType):
         """
         # assert os.path.exists(img), 'file is not exists'
         # img = cv2.imread(img)
+        cv2.imshow('test predict', img)
+        cv2.waitKey(0)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w = img.shape[:2]
         

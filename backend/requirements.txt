@@ -7,7 +7,7 @@ Pillow==7.1.2
 tqdm
 
 # for Chineseocr_lite
-scipy
+scipy==1.2.1
 numpy
 opencv-python
 Cython

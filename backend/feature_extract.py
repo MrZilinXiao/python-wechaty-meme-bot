@@ -42,12 +42,12 @@ class InceptionExtractor(FeatureExtractor, ABC):
     feature_type = np.float32
 
     def __init__(self, img_extensions=None, batch_size=1):
-        # Official Model from here: http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz
         super().__init__(img_extensions, batch_size)
         self.model = InceptionExtractor._init_inception()
         self.transforms = self.transform
         self.dataset = None
         self.data_loader = None
+        self.use_cuda = torch.cuda.is_available()
 
     def init_dataloader(self, meme_path: str):
         """
@@ -67,6 +67,8 @@ class InceptionExtractor(FeatureExtractor, ABC):
         Note that N = 1 when answering users' messages
         :return: feature matrix with the shape of (N, 2048)
         """
+        if self.use_cuda:
+            img_mat = img_mat.cuda()
         return self.model(img_mat)
 
     @staticmethod

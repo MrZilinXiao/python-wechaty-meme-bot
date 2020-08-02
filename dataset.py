@@ -3,7 +3,7 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from orm import Meme
 from backend.utils import Log
-from config import *
+from backend.config import *
 from backend.feature_extract import InceptionExtractor
 
 

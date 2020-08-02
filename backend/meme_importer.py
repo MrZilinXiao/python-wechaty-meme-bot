@@ -10,14 +10,12 @@ tag将由OCR结果分词、去语气词、去重后得到；每张表情包将�
 """
 from backend.hanlp_wrapper import HanlpWrapper
 from backend.ocr_wrapper import OCRWrapper
-from orm import Meme, MemeType, db
+from orm import Meme
 from backend.feature_extract import InceptionExtractor
 from backend.utils import Log
 from PIL import Image
 from torch.autograd import Variable
-from config import *
-import sys
-import os
+from backend.config import *
 import numpy as np
 import time
 import torch
@@ -44,7 +42,7 @@ if __name__ == '__main__':
             img_data = np.array(img_data)
             texts = ocr.text_predict(img_data)
             text = ''.join(texts)
-            tags = hanlp.Tokenizer(text)
+            tags = hanlp.tokenizer(text)
             tags_text = ' '.join(tags)
             feature_vector = v_img[i].cpu().detach()
             feature_encoded = extractor.ndarray2bytes(np.array(feature_vector))
