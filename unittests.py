@@ -3,17 +3,18 @@ import peewee
 import torch
 from torch.utils.data import DataLoader
 
-from orm import Meme, MemeType
+from orm import Meme, MemeType, History
 from dataset import MemeDataset, allow_img_extensions
 from torch.autograd import Variable
 from backend.feature_extract import InceptionExtractor
+from backend.response.dispatcher import RequestDispatcher
 
 
 class ORMTester(unittest.TestCase):
     def test_init_table(self):
         db = peewee.SqliteDatabase('test.db')
         db.connect()
-        db.create_tables([Meme, MemeType], safe=True)
+        db.create_tables([Meme, MemeType, History], safe=True)
         db.close()
         print("Create Tables Successfully!")
 
@@ -52,6 +53,22 @@ class FeatureExtractorTester(unittest.TestCase):
         dummy_input = Variable(torch.randn(1, 3, 299, 299))
         out: torch.Tensor = extractor.get_feature(dummy_input)
         self.assertEqual(out.shape, torch.Size([1, 2048]))
+
+
+class ResponseTester(unittest.TestCase):
+    def test_dispatcher(self):
+        dispatcher = RequestDispatcher()
+
+        def test_read_in_db():
+            dispatcher._read_in_db()
+            self.assertTrue(len(dispatcher.meme_list) > 0)
+
+        def test_get_close_match():
+            self.assertTrue(dispatcher._get_close_matches('hello', 'Hello'))
+            self.assertTrue(dispatcher._get_close_matches('hello', ['Hello', 'hallo', 'hi']))
+
+        test_read_in_db()
+        test_get_close_match()
 
 
 if __name__ == '__main__':
