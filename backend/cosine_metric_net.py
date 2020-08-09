@@ -17,6 +17,10 @@ import math
 
 
 class _ConvNd(nn.Module):
+    """
+    Copied from torch source code
+    since Conv2d_with_padding needs to derived from it and it's a private class.
+    """
     __constants__ = ['stride', 'padding', 'dilation', 'groups', 'bias',
                      'padding_mode', 'output_padding', 'in_channels',
                      'out_channels', 'kernel_size']

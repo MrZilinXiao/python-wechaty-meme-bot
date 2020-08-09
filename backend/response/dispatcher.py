@@ -46,6 +46,7 @@ class RequestDispatcher(object):
             if img_path is not None:
                 return img_path
         return self.meme_list[0][0]  # if with no luck, return a random meme image
+        # TODO: should be dispatcher to backend.response.feature
 
     def _matched(self, target: str):
         """
