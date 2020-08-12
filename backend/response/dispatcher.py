@@ -5,11 +5,12 @@ from fuzzywuzzy import fuzz
 from PIL import Image
 import numpy as np
 import random
+import os
 
 
 class RequestDispatcher(object):
     """
-    A dispatcher which receives a image and takes corresponding action according to image content:
+    A dispatcher which receives a image and takes the corresponding action according to image content:
     1. No OCR Results -> backend.response.feature
     2. OCR Results exist and match one of database entries -> return it
     3. OCR Results exist but no match with database entries -> 1)
@@ -28,7 +29,7 @@ class RequestDispatcher(object):
         for meme in Meme.select():
             self.meme_list.append([meme.path, meme.title, [tag for tag in meme.tag.split(' ')]])
 
-    def receive_handler(self, img_path: str):
+    def receive_handler(self, img_path: str) -> (str, list):
         """
         After web handler receives a image, its path gets passed here, hoping to get a meme response.
         A `History` entry will be submitted into database for record.
@@ -36,23 +37,33 @@ class RequestDispatcher(object):
         :param img_path: received image path sent by web_handler
         :return: str, response meme image path
         """
+        log_list = []   # list to log response strategy
         receive_img = Image.open(img_path).convert("RGB")
         receive_img = np.array(receive_img)
         text_list = self.OCR.text_predict(receive_img)
-        random.shuffle(self.meme_list)  # shuffle meme_list before each iteration to
-        # avoid the situation where strategy always answers with the same image
-        for word in text_list:  # for each word in received meme image
-            img_path = self._matched(word)
-            if img_path is not None:
-                return img_path
-        return self.meme_list[0][0]  # if with no luck, return a random meme image
-        # TODO: should be dispatcher to backend.response.feature
+        if text_list:  # there are OCR result(s)
+            log_list.append('有OCR结果!')
+            random.shuffle(
+                self.meme_list)  # shuffle meme_list before each request to avoid the situation where strategy always answers with the same image
+            log_list.append('随机打乱表情中...')
+            for word in text_list:  # for each word in received meme image
+                log_list.append('正在查找表情中"{}"一词是否匹配数据库...'.format(word))
+                img_path = self._matched(word)
+                if img_path is not None:
+                    log_list.append('"{}"成功匹配数据库表情: {}'.format(word, img_path))
+                    if not os.path.exists(img_path):
+                        log_list.append('文件不存在: {}'.format(img_path))
+                        return '', log_list
+                    return img_path, log_list
+            return self.meme_list[0][0], log_list  # if with no luck, return a random meme image
+        else:
+            pass  # TODO: should be dispatched to backend.response.feature
 
     def _matched(self, target: str):
         """
         Determine whether there is a match in title, tags
-        :param target:
-        :return: bool
+        :param target
+        :return: str/None
         """
         for path, title, tags in self.meme_list:
             if RequestDispatcher._get_close_matches(target, title) or RequestDispatcher._get_close_matches(target,

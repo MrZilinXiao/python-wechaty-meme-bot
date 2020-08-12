@@ -41,6 +41,6 @@ class History(BaseModel):
     Model for logging meme response history
     """
     receive_img_path = CharField(verbose_name='收到表情路径', max_length=256)
-    receive_img_feature = TextField(verbose_name='收到表情特征')
-    response_log = CharField(verbose_name='回复逻辑', max_length=512)
+    receive_img_feature = TextField(verbose_name='收到表情特征', default='')
+    response_log = TextField(verbose_name='回复逻辑')
     response_img_path = CharField(verbose_name='回复表情路径', max_length=256)
