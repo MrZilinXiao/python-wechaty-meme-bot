@@ -1,3 +1,4 @@
+# backend config
 import multiprocessing
 
 num_cores = multiprocessing.cpu_count()
@@ -6,5 +7,5 @@ stop_words_path = './backend/stopwords.txt'
 history_meme_path = './history/'
 backend_post_url = '/meme/upload'  # be the same with frontend config `backend_url`
 
-static_url_path = 'meme'
-static_folder = './meme/'
+static_url_path = ''
+static_folder = './backend/meme/'

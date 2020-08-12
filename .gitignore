@@ -1,6 +1,9 @@
 .DS_Store
 .idea/
 backend/meme/
+frontend/image/
+frontend/logs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

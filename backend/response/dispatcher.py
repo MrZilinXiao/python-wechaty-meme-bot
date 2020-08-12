@@ -86,4 +86,4 @@ class RequestDispatcher(object):
         if isinstance(src, list):
             return bool(difflib.get_close_matches(target, src, n=top_similarity, cutoff=cutoff))
         elif isinstance(src, str):
-            return fuzz.ratio(target, src) > cutoff
+            return fuzz.ratio(target, src) > cutoff * 100
