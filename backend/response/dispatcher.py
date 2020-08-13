@@ -37,7 +37,7 @@ class RequestDispatcher(object):
         :param img_path: received image path sent by web_handler
         :return: str, response meme image path
         """
-        log_list = []   # list to log response strategy
+        log_list = ['DEBUG记录: ']   # list to log response strategy
         receive_img = Image.open(img_path).convert("RGB")
         receive_img = np.array(receive_img)
         text_list = self.OCR.text_predict(receive_img)
@@ -55,6 +55,7 @@ class RequestDispatcher(object):
                         log_list.append('文件不存在: {}'.format(img_path))
                         return '', log_list
                     return img_path, log_list
+            log_list.append('匹配无果，随机返回一项表情...')
             return self.meme_list[0][0], log_list  # if with no luck, return a random meme image
         else:
             pass  # TODO: should be dispatched to backend.response.feature

@@ -8,7 +8,7 @@ bot: Optional[MemeBot] = None
 async def main():
     """doc"""
     global bot
-    bot = MemeBot()
+    bot = MemeBot(debug=True)
     await bot.start()
 
 if __name__ == '__main__':
