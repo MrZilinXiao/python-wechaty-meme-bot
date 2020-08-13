@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 
 from backend.cosine_metric_net import CosineMetricNet
 from orm import Meme, MemeType, History
-from backend.dataset import InceptionDataset, allow_img_extensions
+from backend.dataset import ImportDataset, allow_img_extensions
 from torch.autograd import Variable
 from backend.feature_extract import InceptionExtractor
 from backend.response.dispatcher import RequestDispatcher
@@ -34,11 +34,11 @@ class ORMTester(unittest.TestCase):
 
 class DatasetTester(unittest.TestCase):
     def test_dataset_getter(self):
-        dataset = InceptionDataset('../backend/meme/')
+        dataset = ImportDataset('../backend/meme/')
         self.assertTrue('title' in dataset[0])
 
     def test_dataloader(self):
-        dataset = InceptionDataset('../backend/meme/')
+        dataset = ImportDataset('../backend/meme/')
         dataloader = DataLoader(dataset, batch_size=3,
                                 shuffle=True, num_workers=1, drop_last=False)
         for i, batched_data in enumerate(dataloader):

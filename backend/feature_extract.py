@@ -14,6 +14,8 @@ import collections
 
 
 class FeatureExtractor(object):
+    transforms = None
+
     def __init__(self, img_extensions=None, batch_size=1):
         if img_extensions is None:
             img_extensions = ('.jpg', '.png', '.jpeg', '.gif')
@@ -24,67 +26,21 @@ class FeatureExtractor(object):
     def is_image(self, filename: str):
         return filename.lower().endswith(self.img_extensions)
 
-    @abstractmethod
-    def get_feature(self, img_mat: Variable):
-        pass
-
-    @abstractmethod
-    def init_dataloader(self, **kwargs):
-        pass
-
-    @staticmethod
-    def transform():
-        pass
-
-
-class InceptionExtractor(FeatureExtractor, ABC):
-    """
-    Since Inception is not trainable, we integrate training utils like dataloader into InceptionExtractor
-    However, other extractors won't follow
-    """
-    img_size = (299, 299)
-    feature_shape = (1, 2048)
-    feature_type = np.float32
-
-    def __init__(self, img_extensions=None, batch_size=1):
-        super().__init__(img_extensions, batch_size)
-        self.model = InceptionExtractor._init_inception()
-        self.transforms = self.transform
-        self.dataset = None
-        self.data_loader = None
-
     def init_dataloader(self, meme_path: str, num_workers: int = config.num_cores):
         """
-        Init a torch.utils.data.Dataset instance for future use
+        Init a torch.utils.data.Dataset instance for import use
         :param num_workers:
         :param meme_path:
         :return:
         """
-        from backend.dataset import InceptionDataset
-        self.dataset = InceptionDataset(meme_path)
+        from backend.dataset import ImportDataset
+        self.dataset = ImportDataset(meme_path, transforms=self.transforms)
         self.data_loader = DataLoader(self.dataset, batch_size=self.batch_size,
                                       shuffle=True, num_workers=num_workers, drop_last=False)
 
+    @abstractmethod
     def get_feature(self, img_mat: Variable):
-        """
-        Extract features from certain image(s)
-        :param img_mat: images variable with the shape of (N, 3, 299, 299), where N indicates batch_size
-        Note that N = 1 when answering users' messages
-        :return: feature matrix with the shape of (N, 2048)
-        """
-        if self.use_cuda:
-            img_mat = img_mat.cuda()
-        out = self.model(img_mat)
-        return F.normalize(out, dim=1, p=2)
-
-    @staticmethod
-    def transform():
-        return transforms.Compose([
-            transforms.Resize(InceptionExtractor.img_size),
-            transforms.CenterCrop(InceptionExtractor.img_size),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        pass
 
     @staticmethod
     def bytes2ndarray(base64_str: str) -> np.ndarray:
@@ -96,6 +52,45 @@ class InceptionExtractor(FeatureExtractor, ABC):
     @staticmethod
     def ndarray2bytes(array: np.ndarray) -> str:
         return base64.urlsafe_b64encode(array.tobytes())
+
+    # @abstractmethod
+    # def init_dataloader(self, **kwargs):
+    #     pass
+
+
+class InceptionExtractor(FeatureExtractor, ABC):
+    """
+    Since Inception is not trainable, we integrate training utils like dataloader into InceptionExtractor
+    However, other extractors won't follow
+    """
+    img_size = (299, 299)
+    feature_shape = (1, 2048)
+    feature_type = np.float32
+    transforms = transforms.Compose([
+        transforms.Resize(img_size),
+        transforms.CenterCrop(img_size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    def __init__(self, img_extensions=None, batch_size=1):
+        super().__init__(img_extensions, batch_size)
+        self.model = InceptionExtractor._init_inception()
+        # self.transforms = self.transform
+        self.dataset = None
+        self.data_loader = None
+
+    def get_feature(self, img_mat: Variable):
+        """
+        Extract features from certain image(s)
+        :param img_mat: images variable with the shape of (N, 3, 299, 299), where N indicates batch_size
+        Note that N = 1 when answering users' messages
+        :return: feature matrix with the shape of (N, 2048)
+        """
+        if self.use_cuda:
+            img_mat = img_mat.cuda()
+        out = self.model(img_mat)
+        return F.normalize(out, dim=1, p=2)  # inception need L2 normalize
 
     @staticmethod
     def _init_inception():
@@ -117,8 +112,8 @@ class CosineMetricExtractor(FeatureExtractor, ABC):
         transforms.ToTensor(),
     ])
 
-    def __init__(self, model_path='./backend/cosine_model.pt'):
-        super(CosineMetricExtractor, self).__init__()
+    def __init__(self, img_extensions: tuple, batch_size=1, model_path='./backend/cosine_model.pt'):
+        super(CosineMetricExtractor, self).__init__(img_extensions=img_extensions, batch_size=batch_size)
         self.model = CosineMetricNet(num_classes=-1, add_logits=False)
         if self.use_cuda:
             self.model = self.model.cuda()
@@ -132,8 +127,9 @@ class CosineMetricExtractor(FeatureExtractor, ABC):
             s = "Model loaded(%s) is not compatible with the definition, please check!" % model_path
             raise KeyError(s) from e
 
+    # def init_dataloader(self, meme_path: str, num_workers: int = config.num_cores):
+
     def get_feature(self, img_mat: Variable):
         if self.use_cuda:
             img_mat = img_mat.cuda()
-        out = self.model(img_mat)
-        return F.normalize(out, dim=1, p=2)
+        return self.model(img_mat)
