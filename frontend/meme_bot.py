@@ -72,10 +72,10 @@ class MemeBot(Wechaty):
             if msg.type() == MessageType.MESSAGE_TYPE_IMAGE or MessageType.MESSAGE_TYPE_EMOTICON:
                 ret_json = await self.msg_handler(msg)
                 # example returning json: {'img_name': '/001/001.jpg', 'md5': 'ff7bd2b664bf65962a924912bfd17507'}
-                if self.debug and 'log' in ret_json:
-                    await msg.say(ret_json['log'])
                 if ret_json['md5'] in self.cache_dict:  # hit cache
                     ret_path = self.cache_dict[ret_json['md5']]
+                    if 'log' in ret_json:
+                        ret_json['log'] += '\n回复图片命中缓存!'
                 else:
                     ret_img = self.s.get(url=config.backend_static_url + ret_json['img_name'])
                     if not str(ret_img.status_code).startswith('2'):  # not 2XX response code
@@ -88,6 +88,9 @@ class MemeBot(Wechaty):
                         f.write(ret_img.content)
                     self.cache_dict[ret_json['md5']] = ret_path
                 # ret_path = os.path.join(config.image_temp_dir, '0c4baea3-9792-4d07-8ec0-4fd62afd6117.jpg')
+                if self.debug and 'log' in ret_json:
+                    await msg.say(ret_json['log'])
+
                 with open(ret_path, 'rb') as f:
                     content: str = base64.b64encode(f.read())
                     ret_img = FileBox.from_base64(name=os.path.basename(ret_path), base64=content)

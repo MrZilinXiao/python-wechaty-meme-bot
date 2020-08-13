@@ -55,7 +55,9 @@ class RequestDispatcher(object):
                         log_list.append('文件不存在: {}'.format(img_path))
                         return '', log_list
                     return img_path, log_list
-            log_list.append('匹配无果，随机返回一项表情...')
+                else:
+                    log_list.append('"{}"匹配无果...'.format(word))
+            log_list.append('所有词均匹配无果，随机返回一项表情...')
             return self.meme_list[0][0], log_list  # if with no luck, return a random meme image
         else:
             pass  # TODO: should be dispatched to backend.response.feature
