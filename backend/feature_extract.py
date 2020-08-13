@@ -1,17 +1,16 @@
 from abc import abstractmethod, ABC
 import numpy as np
-import os
-import time
 import base64
 import torch
 import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from PIL import Image
-from backend.utils import Log
 from backend import config
+from backend.cosine_metric_net import CosineMetricNet
+import collections
 
 
 class FeatureExtractor(object):
@@ -20,6 +19,7 @@ class FeatureExtractor(object):
             img_extensions = ('.jpg', '.png', '.jpeg', '.gif')
         self.img_extensions = img_extensions
         self.batch_size = batch_size
+        self.use_cuda = torch.cuda.is_available()
 
     def is_image(self, filename: str):
         return filename.lower().endswith(self.img_extensions)
@@ -38,6 +38,10 @@ class FeatureExtractor(object):
 
 
 class InceptionExtractor(FeatureExtractor, ABC):
+    """
+    Since Inception is not trainable, we integrate training utils like dataloader into InceptionExtractor
+    However, other extractors won't follow
+    """
     img_size = (299, 299)
     feature_shape = (1, 2048)
     feature_type = np.float32
@@ -48,18 +52,18 @@ class InceptionExtractor(FeatureExtractor, ABC):
         self.transforms = self.transform
         self.dataset = None
         self.data_loader = None
-        self.use_cuda = torch.cuda.is_available()
 
-    def init_dataloader(self, meme_path: str):
+    def init_dataloader(self, meme_path: str, num_workers: int = config.num_cores):
         """
         Init a torch.utils.data.Dataset instance for future use
+        :param num_workers:
         :param meme_path:
         :return:
         """
-        from dataset import MemeDataset
-        self.dataset = MemeDataset(meme_path)
+        from backend.dataset import InceptionDataset
+        self.dataset = InceptionDataset(meme_path)
         self.data_loader = DataLoader(self.dataset, batch_size=self.batch_size,
-                                      shuffle=True, num_workers=config.num_cores, drop_last=False)
+                                      shuffle=True, num_workers=num_workers, drop_last=False)
 
     def get_feature(self, img_mat: Variable):
         """
@@ -70,7 +74,8 @@ class InceptionExtractor(FeatureExtractor, ABC):
         """
         if self.use_cuda:
             img_mat = img_mat.cuda()
-        return self.model(img_mat)
+        out = self.model(img_mat)
+        return F.normalize(out, dim=1, p=2)
 
     @staticmethod
     def transform():
@@ -100,3 +105,35 @@ class InceptionExtractor(FeatureExtractor, ABC):
         inception.fc = nn.Identity()  # replace fully-connected layer with an Identity to get 2048 feature vector
         inception.eval()
         return inception
+
+
+class CosineMetricExtractor(FeatureExtractor, ABC):
+    exclude_keys = ('weights', 'scale')  # weights & scale not needed since they were only useful for training
+    img_size = (128, 64)
+    feature_shape = (1, 128)
+    feature_type = np.float32
+    test_transforms = transforms.Compose([
+        transforms.Resize((128, 64)),
+        transforms.ToTensor(),
+    ])
+
+    def __init__(self, model_path='./backend/cosine_model.pt'):
+        super(CosineMetricExtractor, self).__init__()
+        self.model = CosineMetricNet(num_classes=-1, add_logits=False)
+        if self.use_cuda:
+            self.model = self.model.cuda()
+        # load cosine metric model
+        try:
+            ckpt: collections.OrderedDict = torch.load(model_path)
+            ckpt['model_state_dict'] = {k: v for k, v in ckpt['model_state_dict'].items()
+                                        if k not in self.exclude_keys}
+            self.model.load_state_dict(ckpt['model_state_dict'], strict=False)
+        except KeyError as e:
+            s = "Model loaded(%s) is not compatible with the definition, please check!" % model_path
+            raise KeyError(s) from e
+
+    def get_feature(self, img_mat: Variable):
+        if self.use_cuda:
+            img_mat = img_mat.cuda()
+        out = self.model(img_mat)
+        return F.normalize(out, dim=1, p=2)

@@ -20,7 +20,7 @@ class MemeBot(Wechaty):
     content_type_mapping = {
         'image/gif': '.gif',
         'image/jpeg': '.jpg',
-        'image/png': 'png'
+        'image/png': '.png'
     }
 
     def __init__(self, debug=False):
@@ -40,9 +40,6 @@ class MemeBot(Wechaty):
         for img_file, _, _ in os.walk(config.image_temp_dir):  # type: str
             if img_file.lower().endswith(config.allow_img_extensions):
                 self.cache_dict[hashlib.md5(open(img_file, 'rb').read()).hexdigest()] = img_file
-
-    def _img_to_PIL(self, img):
-        pass
 
     async def msg_handler(self, msg: Message) -> dict:
         """
@@ -66,7 +63,7 @@ class MemeBot(Wechaty):
             b64_str = base64.b64encode(ret.content)
             data_param.update(img_name=str(uuid.uuid4()) + MemeBot.content_type_mapping[ret.headers['Content-Type']],
                               data=b64_str)
-        ret_json = self.s.post(url=config.backend_upload_url, data=data_param).json()  # keys: img_name, md5, log
+        ret_json = self.s.post(url=config.backend_upload_url, data=data_param).json()  # ret keys: img_name, md5, log
         return ret_json
 
     async def on_message(self, msg: Message):

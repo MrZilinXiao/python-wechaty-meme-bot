@@ -208,13 +208,16 @@ class CosineMetricNet(nn.Module):
             out = resblock(out)
         out = self.linear(out)
         out = F.normalize(out, dim=1, p=2)
-        if add_logits:
+        if self.add_logits and add_logits:
             scale = F.softplus(self.scale)
             weight_normed = F.normalize(self.weights, dim=0, p=2)
             logits = scale * torch.matmul(out, weight_normed)
             return out, logits
         else:
             return out
+
+    def forward_once(self, input):
+        return self.forward(input, add_logits=False)
 
     def forward_twice(self, input1, input2):
         out1 = self.forward(input1, add_logits=False)
@@ -261,3 +264,4 @@ class ResidualBlock(nn.Module):
             x = self.bn3(self.conv3(x))
         # return F.relu(out + x)
         return out + x
+

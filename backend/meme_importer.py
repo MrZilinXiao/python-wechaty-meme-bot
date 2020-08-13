@@ -28,7 +28,7 @@ if __name__ == '__main__':
     extractor = InceptionExtractor(allow_img_extensions, 16)
 
     meme_path = './backend/meme/'
-    extractor.init_dataloader(meme_path)
+    extractor.init_dataloader(meme_path, num_workers=1)
     for k, batched_data in enumerate(extractor.data_loader):
         st_time = time.time()
         m_img = Variable(batched_data['m_img'])  # [batch_size, 3, 299, 299]

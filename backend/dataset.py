@@ -7,7 +7,7 @@ from backend.config import *
 from backend.feature_extract import InceptionExtractor
 
 
-class MemeDataset(Dataset):
+class InceptionDataset(Dataset):
     def __init__(self, meme_path: str):
         self.meme_list = []  # tuple like (meme_path, meme_title)
         self.get_meme_path_dict(meme_path)
@@ -52,7 +52,7 @@ class MemeDataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = MemeDataset('./backend/meme/')
+    dataset = InceptionDataset('meme/')
     dataloader = DataLoader(dataset, batch_size=3,
                             shuffle=True, num_workers=1, drop_last=False)
     for i, batched_data in enumerate(dataloader):
