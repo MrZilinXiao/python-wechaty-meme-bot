@@ -4,9 +4,9 @@
 [![Wechaty](https://wechaty.js.org/img/wechaty-logo.svg)](https://github.com/wechaty/wechaty)
 [![summerofcode](https://isrc.iscas.ac.cn/summer2020/help/assets/summer2020.svg)](https://isrc.iscas.ac.cn/summer2020/)
 
-PowerPoint Demostration: 
+PowerPoint Demostration: [https://www.bilibili.com/video/BV1kZ4y1M7F6/](https://www.bilibili.com/video/BV1kZ4y1M7F6/)
 
-Demo Live Video on bilibili: 
+Demo Live Video on bilibili: [https://www.bilibili.com/video/BV17f4y197ut/](https://www.bilibili.com/video/BV17f4y197ut/)
 
 My community mentor is [Huang](https://github.com/huangaszaq), contributor of python-wechaty. I won't make such progress without his support.
 
@@ -110,3 +110,9 @@ python backend/web_handler.py  # this will trigger chineseocrlite compiling proc
 ## Open-Source Reference
 - [chineseocr_lite](https://github.com/ouyanghuiyu/chineseocr_lite/tree/master): Powerful Chinese OCR module with accurate results and fast inference.
 - [HaNLP](https://github.com/hankcs/HanLP): Multilingual NLP library for researchers and companies, built on TensorFlow 2.0.
+
+## Academic Citation
+```
+# in backend/cosine_metric_net.py
+[1]N. Wojke and A. Bewley, “Deep Cosine Metric Learning for Person Re-identification,” in 2018 IEEE Winter Conference on Applications of Computer Vision (WACV), Lake Tahoe, NV, Mar. 2018, pp. 748–756, doi: 10.1109/WACV.2018.00087.
+```
