@@ -75,7 +75,7 @@ class WebView(views.View, ABC):
             History.create(receive_img_path=save_path, response_log='\n'.join(log_list),
                            response_img_path=ret_meme)
             return jsonify({
-                'img_name': '/' + '/'.join(ret_meme.split('/')[-2:]),  # for frontend to perform static reference
+                'img_name': ret_meme.split('meme')[-1],  # for frontend to perform static reference
                 # suffix of URL depends on frontend setting, making it possible to get CDN support
                 'md5': md5_str,
                 'log': '\n'.join(log_list)
