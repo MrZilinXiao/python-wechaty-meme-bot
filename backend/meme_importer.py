@@ -79,7 +79,7 @@ class BaseImporter(object):
                     img_data = np.array(img_data)
                     texts = self.ocr.text_predict(img_data)
                     text = ''.join(texts)
-                tags = self.hanlp.tokenizer(text)
+                tags = self.hanlp.Tokenizer(text)
                 tags_text = ' '.join(tags)
                 feature_vector = v_img[i].cpu().detach()
                 feature_encoded = self.extractor.ndarray2bytes(np.array(feature_vector))
