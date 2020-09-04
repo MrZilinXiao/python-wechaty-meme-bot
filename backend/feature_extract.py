@@ -53,10 +53,6 @@ class FeatureExtractor(object):
     def ndarray2bytes(array: np.ndarray) -> str:
         return base64.urlsafe_b64encode(array.tobytes())
 
-    # @abstractmethod
-    # def init_dataloader(self, **kwargs):
-    #     pass
-
 
 class InceptionExtractor(FeatureExtractor, ABC):
     """

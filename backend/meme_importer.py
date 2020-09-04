@@ -95,34 +95,3 @@ class BaseImporter(object):
 if __name__ == '__main__':
     importer = BaseImporter(meme_path='./backend/meme/', num_workers=12)
     importer.import_meme()
-    # Init Modules
-    # hanlp = HanlpWrapper()
-    # ocr = OCRWrapper('mobilenetv2')
-    # extractor = InceptionExtractor(allow_img_extensions, 16)
-    #
-    # meme_path = './backend/meme/'
-    # extractor.init_dataloader(meme_path, num_workers=1)
-    # for k, batched_data in enumerate(extractor.data_loader):
-    #     st_time = time.time()
-    #     m_img = Variable(batched_data['m_img'])  # [batch_size, 3, 299, 299]
-    #     title = batched_data['title']
-    #     meme_path = batched_data['meme_path']
-    #     if torch.cuda.is_available():
-    #         m_img = m_img.cuda()
-    #     v_img = extractor.get_feature(m_img)  # [batch_size, 2048]
-    #     for i in range(len(title)):
-    #         img_data = Image.open(meme_path[i]).convert('RGB')
-    #         img_data = np.array(img_data)
-    #         texts = ocr.text_predict(img_data)
-    #         text = ''.join(texts)
-    #         tags = hanlp.tokenizer(text)
-    #         tags_text = ' '.join(tags)
-    #         feature_vector = v_img[i].cpu().detach()
-    #         feature_encoded = extractor.ndarray2bytes(np.array(feature_vector))
-    #         try:
-    #             Meme.create(path=meme_path[i], title=title[i], tag=tags_text, feature=feature_encoded)
-    #         except peewee.IntegrityError as e:
-    #             Log.info(str(e))
-    #             continue
-    #         Log.info("Import Meme with title:" + title[i] + ", tag:" + tags_text + ', raw text:' + text)
-    #     Log.info("This batch consumes %.2f seconds..." % (time.time() - st_time))
