@@ -1,0 +1,18 @@
+general:  # general settings for backend
+  allow_img_extensions: ['.jpg', '.png', '.jpeg', '.gif']
+  stop_words_path: './backend/stopwords.txt'
+  history_meme_path: './history/'
+
+backend:
+  backend_post_url: '/meme/upload'
+  static_url_path: ''
+  static_folder: './backend/meme/'
+
+meme_import:
+  num_workers: 12
+
+conversation:  # conversation module related
+  voca_path: 'conversation/vocabulary/vocab_small.txt'
+  dialogue_model: 'conversation/dialogue_model/'
+  mmi_model: 'conversation/mmi_model'
+

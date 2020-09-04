@@ -9,11 +9,11 @@ from wechaty.user import Message, Room
 
 import requests
 from requests.packages.urllib3.util import Retry
-from PIL import Image
 import os
 from frontend import config
 import hashlib
 import uuid
+from typing import List, Union
 
 
 class MemeBot(Wechaty):
@@ -30,7 +30,7 @@ class MemeBot(Wechaty):
         if not os.path.exists(config.image_temp_dir):
             os.mkdir(config.image_temp_dir)
         else:
-            self._load_cache()
+            self._load_cache()  # load meme images received earlier as cache
         self.s = requests.Session()
         self.s.mount('http://',
                      HTTPAdapter(max_retries=Retry(total=3, method_whitelist=frozenset(
@@ -48,13 +48,13 @@ class MemeBot(Wechaty):
         :return: dict like this: {'img_name': '/001/001.jpg', 'md5': 'ff7bd2b664bf65962a924912bfd17507'}
         """
         data_param = {}
-        if msg.type() == MessageType.MESSAGE_TYPE_IMAGE:
+        if msg.type() == MessageType.MESSAGE_TYPE_IMAGE:  # message is an image
             img = await msg.to_file_box()
             data_param.update(
                 img_name=img.name,
                 data=img.base64
             )
-        elif msg.type() == MessageType.MESSAGE_TYPE_EMOTICON:
+        elif msg.type() == MessageType.MESSAGE_TYPE_EMOTICON:  # message is an Wechat EMOTICON, need to fetch from CDN
             import xml.etree.ElementTree as Etree
             content = msg.payload.text  # xml content, need xml parser to extract msg.emoji(cdnurl)
             msgtree = Etree.fromstring(content)
@@ -67,13 +67,12 @@ class MemeBot(Wechaty):
         return ret_json
 
     async def on_message(self, msg: Message):
-        from_contact = msg.talker()
         if msg.is_self():  # for self testing
             if msg.type() == MessageType.MESSAGE_TYPE_IMAGE or MessageType.MESSAGE_TYPE_EMOTICON:
                 ret_json = await self.msg_handler(msg)
                 # example returning json: {'img_name': '/001/001.jpg', 'md5': 'ff7bd2b664bf65962a924912bfd17507'}
                 if ret_json['md5'] in self.cache_dict:  # hit cache
-                    ret_path = self.cache_dict[ret_json['md5']]
+                    ret_path: str = self.cache_dict[ret_json['md5']]
                     if 'log' in ret_json:
                         ret_json['log'] += '\n回复图片命中缓存!'
                 else:
@@ -82,7 +81,7 @@ class MemeBot(Wechaty):
                         raise FileNotFoundError(
                             "Can't get img from URL {}, with HTTP status code {}".format(
                                 config.backend_static_url + ret_json['img_name'], str(ret_img.status_code)))
-                    ret_path = os.path.join(config.image_temp_dir, str(uuid.uuid4()) + '.' +
+                    ret_path = os.path.join(config.image_temp_dir, str(uuid.uuid4()) + os.path.extsep +
                                             ret_json['img_name'].split('.')[-1])
                     with open(ret_path, 'wb') as f:
                         f.write(ret_img.content)
@@ -95,7 +94,3 @@ class MemeBot(Wechaty):
                     content: str = base64.b64encode(f.read())
                     ret_img = FileBox.from_base64(name=os.path.basename(ret_path), base64=content)
                     await msg.say(ret_img)
-                # ret_img = FileBox.from_file(ret_path, name=os.path.basename(ret_path))   # TODO: from_file not working now, due to: https://github.com/wechaty/python-wechaty/issues/83
-                # ret_img = FileBox.from_url(
-                #     config.backend_static_url + ret_json['img_name'],
-                #     name=os.path.basename(config.backend_static_url + ret_json['img_name']))  # not possible, since with no support to Chinese path

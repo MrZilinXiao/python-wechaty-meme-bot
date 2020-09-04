@@ -1,5 +1,20 @@
 import logging
 import sys
+import yaml
+
+
+def Singleton(cls):
+    """
+    A decorator for Singleton support
+    """
+    _instance = {}
+
+    def _singleton(*args, **kargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kargs)
+        return _instance[cls]
+
+    return _singleton
 
 
 class Log(object):
@@ -8,7 +23,7 @@ class Log(object):
     @classmethod
     def __get_logger(cls):
         if Log._logger is None:
-            logger = logging.getLogger("Fighting-Meme")
+            logger = logging.getLogger("wechaty-meme-bot")
             formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
             file_handler = logging.FileHandler("main.log")
             file_handler.setFormatter(formatter)
@@ -30,3 +45,19 @@ class Log(object):
     @classmethod
     def warn(cls, _str):
         cls.__get_logger().warn(_str)
+
+
+@Singleton
+class ConfigParser:
+    config_dict = None
+
+    def __init__(self, config_path='config.yaml'):  # inited
+        with open(config_path, 'r') as buf:
+            ConfigParser.config_dict = yaml.load(buf, Loader=yaml.FullLoader)
+
+    @staticmethod
+    def get_dict():
+        if ConfigParser.config_dict is not None:
+            return ConfigParser.config_dict
+        else:
+            raise RuntimeError('Config parser not inited...')

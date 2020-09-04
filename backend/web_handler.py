@@ -5,6 +5,7 @@ from abc import ABC
 from flask import Flask, request, jsonify, views
 from backend.response.dispatcher import RequestDispatcher
 import backend.config as config
+from backend.utils import ConfigParser
 import os
 import base64
 from PIL import Image
@@ -22,11 +23,11 @@ class WebHandler:
     }
 
     def __init__(self):
+        self.config = ConfigParser()  # initialize ConfigParser for once
         if not os.path.exists(config.history_meme_path):
             os.mkdir(config.history_meme_path)
-        if self.dispatcher is None:
-            self.dispatcher = RequestDispatcher()
-        # self.history_path = {}
+        if WebHandler.dispatcher is None:  # make sure RequestDispatcher only gets inited for once
+            WebHandler.dispatcher = RequestDispatcher()
 
     @staticmethod
     def exception(code: int) -> dict:
@@ -34,7 +35,7 @@ class WebHandler:
 
     @staticmethod
     def _generate_random_str(length=16):
-        str_list = [random.choice(string.digits + string.ascii_letters) for i in range(length)]
+        str_list = [random.choice(string.digits + string.ascii_letters) for _ in range(length)]
         random_str = ''.join(str_list)
         return random_str
 
