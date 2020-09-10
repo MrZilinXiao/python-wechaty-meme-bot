@@ -8,7 +8,6 @@ import backend.config as config
 from backend.utils import ConfigParser
 import os
 import base64
-from PIL import Image
 from orm import History
 import hashlib
 

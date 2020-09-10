@@ -1,4 +1,4 @@
-from backend.response.direct import DirectHandler
+from backend.response.dispatcher import DirectHandler
 from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
 from transformers import BertTokenizer
 from typing import List
@@ -15,7 +15,7 @@ class ConversationHandler(DirectHandler):
         self.device = device
         self.max_len = max_len  # max length of each utterance
         self.history_len = history_len
-        self.config = ConfigParser.get_dict()['conversation']
+        self.config = ConfigParser.config_dict['conversation']
         self.tokenizer = BertTokenizer(vocab_file=self.config['voca_path'])
         self.model = GPT2LMHeadModel.from_pretrained(self.config['dialogue_model'])
         self.mmi_model = GPT2LMHeadModel.from_pretrained(self.config['mmi_model'])
@@ -78,7 +78,7 @@ class ConversationHandler(DirectHandler):
         generated = []
         finish_set = set()
 
-        for _ in range(self.max_len):   # limit length of each utterance
+        for _ in range(self.max_len):  # limit length of each utterance
             outputs = self.model(input_ids=input_tensors)
             next_token_logits = outputs[0][:, -1, :]  # grab the last array at dim 1
             for idx in range(self.batch_size):
@@ -119,7 +119,7 @@ class ConversationHandler(DirectHandler):
             mmi_input_id = [self.tokenizer.cls_token_id]
             mmi_input_id.extend(res)
             mmi_input_id.append(self.tokenizer.sep_token_id)
-            for history_utr in reversed(self.history[-self.history_len: ]):
+            for history_utr in reversed(self.history[-self.history_len:]):
                 mmi_input_id.extend(history_utr)
                 mmi_input_id.append(self.tokenizer.sep_token_id)
 
@@ -137,5 +137,9 @@ class ConversationHandler(DirectHandler):
 
         # send to DirectHandler to search for memes
         # TODO: May need further tokenizer via HanLP
-        return super().get_matched([best_response_text], log_list)
-        
+        img_path, log_list = super().get_matched([best_response_text], log_list)
+        if log_list[-1].find('所有词均匹配无果') != -1:  # no match when using ConversationHandler, falling back to Direct
+            log_list.append('数据库中没有找到对话系统匹配结果...使用传统方法...')
+            img_path, log_list = super().get_matched(target, log_list)
+
+        return img_path, log_list
