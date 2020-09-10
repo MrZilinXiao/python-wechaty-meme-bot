@@ -1,6 +1,6 @@
 import pytest
 from backend.response.conversation import ConversationHandler
-from backend.response.direct import DirectHandler
+from backend.response.dispatcher import DirectHandler
 from backend.dataset import ImportDataset
 from torchvision import transforms
 

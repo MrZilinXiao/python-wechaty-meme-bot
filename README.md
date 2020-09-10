@@ -80,7 +80,7 @@ $ tree -L 3 -I '__pycache__'
 │   └── meme_bot.py
 ├── orm.py  # orm module
 ├── test.db   # SQLite database
-├── unittest
+├── tests
 └── unittests.py
 
 ```

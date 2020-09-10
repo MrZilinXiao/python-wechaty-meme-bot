@@ -1,6 +1,6 @@
 import pytest
 from backend.response.conversation import ConversationHandler
-from backend.response.direct import DirectHandler
+from backend.response.dispatcher import DirectHandler
 
 
 def test_conversation_matched(conversation_handler: ConversationHandler):

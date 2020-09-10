@@ -32,6 +32,7 @@ class Meme(BaseModel):
     path = CharField(verbose_name='表情相对路径', max_length=256, unique=True)
     title = CharField(verbose_name='表情标题', max_length=256)
     tag = CharField(verbose_name='表情标签，以`,`分割', max_length=512, default='')
+    raw_text = TextField(verbose_name='原始OCR结果')
     feature = TextField(verbose_name='表情特征（numpy array序列化后）')
     clusterType = ForeignKeyField(MemeType, backref='Meme', on_delete='NO ACTION', null=True)
 
@@ -44,3 +45,15 @@ class History(BaseModel):
     receive_img_feature = TextField(verbose_name='收到表情特征', default='')
     response_log = TextField(verbose_name='回复逻辑')
     response_img_path = CharField(verbose_name='回复表情路径', max_length=256)
+
+
+if __name__ == '__main__':
+    # executed only for once to build sqlite database
+    try:
+        db.create_tables([Meme, MemeType, History], safe=True)
+        db.close()
+        print("Create Tables Successfully!")
+    except IntegrityError as e:
+        print("Init Database Error with Exception {}".format(str(e)))
+    except Exception as e:
+        print("Init Database Failed with Unknown Error: {}".format(str(e)))
