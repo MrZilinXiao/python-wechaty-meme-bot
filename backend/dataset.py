@@ -7,9 +7,6 @@ from backend.config import *
 import torchvision.transforms as transforms
 
 
-# from backend.feature_extract import InceptionExtractor
-
-
 class ImportDataset(Dataset):
     def __init__(self, meme_path: str, transforms: transforms.Compose):
         self.meme_list = []  # tuple like (meme_path, meme_title)

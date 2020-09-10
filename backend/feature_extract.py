@@ -14,7 +14,9 @@ import collections
 
 
 class FeatureExtractor(object):
-    transforms = None
+    transforms = transforms.Compose([
+        transforms.ToTensor()
+    ])
 
     def __init__(self, img_extensions=None, batch_size=1):
         if img_extensions is None:
@@ -52,6 +54,15 @@ class FeatureExtractor(object):
     @staticmethod
     def ndarray2bytes(array: np.ndarray) -> str:
         return base64.urlsafe_b64encode(array.tobytes())
+
+
+class NoneExtractor(FeatureExtractor):
+    def __init__(self):
+        super(NoneExtractor, self).__init__()
+    
+    @abstractmethod
+    def get_feature(self, img_mat: Variable):
+        return None
 
 
 class InceptionExtractor(FeatureExtractor, ABC):

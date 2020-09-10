@@ -20,7 +20,7 @@ being related with the same subject
 from backend.hanlp_wrapper import HanlpWrapper
 from backend.ocr_wrapper import OCRWrapper
 from orm import Meme
-from backend.feature_extract import InceptionExtractor, CosineMetricExtractor
+from backend.feature_extract import InceptionExtractor, CosineMetricExtractor, NoneExtractor
 from backend.utils import Log
 from PIL import Image
 from torch.autograd import Variable
@@ -45,6 +45,8 @@ class BaseImporter(object):
             self.extractor = InceptionExtractor(allow_img_extensions, batch_size)
         elif extractor_type == 'cosine':
             self.extractor = CosineMetricExtractor(allow_img_extensions, batch_size)
+        elif extractor_type == 'none':
+            self.extractor = NoneExtractor()
         else:
             raise NotImplementedError
         self.extractor.init_dataloader(meme_path, num_workers=num_workers)
@@ -81,10 +83,13 @@ class BaseImporter(object):
                     text = ''.join(texts)
                 tags = self.hanlp.Tokenizer(text)
                 tags_text = ' '.join(tags)
-                feature_vector = v_img[i].cpu().detach()
-                feature_encoded = self.extractor.ndarray2bytes(np.array(feature_vector))
+                if v_img is None:
+                    feature_encoded = ''
+                else:
+                    feature_vector = v_img[i].cpu().detach()
+                    feature_encoded = self.extractor.ndarray2bytes(np.array(feature_vector))
                 try:
-                    Meme.create(path=meme_path[i], title=title[i], tag=tags_text, feature=feature_encoded)
+                    Meme.create(path=meme_path[i], title=title[i], tag=tags_text, feature=feature_encoded, raw_text=text)
                 except peewee.IntegrityError as e:
                     Log.info(str(e))
                     continue
@@ -93,5 +98,5 @@ class BaseImporter(object):
 
 
 if __name__ == '__main__':
-    importer = BaseImporter(meme_path='./backend/meme/', num_workers=12)
+    importer = BaseImporter(meme_path='./backend/meme/', num_workers=12, extractor_type='none')
     importer.import_meme()
