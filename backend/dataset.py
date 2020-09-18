@@ -54,11 +54,17 @@ class ImportDataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = ImportDataset('meme/')
-    dataloader = DataLoader(dataset, batch_size=3,
-                            shuffle=True, num_workers=1, drop_last=False)
-    for i, batched_data in enumerate(dataloader):
-        m_img = batched_data['m_img']  # [N, 3, 299, 299]
-        title = batched_data['title']
-        meme_path = batched_data['meme_path']
-        print(m_img, title, meme_path)
+    transform = transforms.Compose([
+        transforms.Resize((128, 64)),
+        transforms.ToTensor()
+    ])
+    dataset = ImportDataset('backend/meme/', transforms=transform)
+
+    print(dataset[0])
+    # dataloader = DataLoader(dataset, batch_size=3,
+    #                         shuffle=True, num_workers=1, drop_last=False)
+    # for i, batched_data in enumerate(dataloader):
+    #     m_img = batched_data['m_img']  # [N, 3, 299, 299]
+    #     title = batched_data['title']
+    #     meme_path = batched_data['meme_path']
+    #     print(m_img, title, meme_path)

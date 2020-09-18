@@ -52,12 +52,17 @@ class ConfigParser:
     config_dict = None
 
     def __init__(self, config_path='config.yaml'):  # inited
-        with open(config_path, 'r') as buf:
-            ConfigParser.config_dict = yaml.load(buf, Loader=yaml.FullLoader)
+        ConfigParser.config_dict = yaml.load(open(config_path, 'r'), Loader=yaml.FullLoader)
 
     @staticmethod
-    def get_dict():
+    def get_dict() -> dict:
         if ConfigParser.config_dict is not None:
             return ConfigParser.config_dict
         else:
             raise RuntimeError('Config parser not inited...')
+
+
+if __name__ == '__main__':
+    a = ConfigParser()
+    print(type(ConfigParser.config_dict))
+    print(ConfigParser.config_dict['general'])

@@ -17,7 +17,7 @@ def dataset():
         transforms.Resize((128, 64)),
         transforms.ToTensor()
     ])
-    return ImportDataset('../backend/meme', transforms=transform)
+    return ImportDataset('./backend/meme', transforms=transform)
 
 
 @pytest.fixture(scope='module')

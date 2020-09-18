@@ -8,7 +8,8 @@ export PYTHONPATH=./
 all: clean init
 
 .PHONY: clean
-clean: rm -rf dist/*
+clean:
+	rm -rf dist/*
 
 .PHONY: lint
 lint: pylint

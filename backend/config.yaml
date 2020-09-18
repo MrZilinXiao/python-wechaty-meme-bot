@@ -12,7 +12,7 @@ meme_import:
   num_workers: 12
 
 conversation:  # conversation module related
-  voca_path: 'conversation/vocabulary/vocab_small.txt'
-  dialogue_model: 'conversation/dialogue_model/'
-  mmi_model: 'conversation/mmi_model'
+  voca_path: 'backend/conversation/vocabulary/vocab_small.txt'
+  dialogue_model: 'backend/conversation/dialogue_model/'
+  mmi_model: 'backend/conversation/mmi_model'
 

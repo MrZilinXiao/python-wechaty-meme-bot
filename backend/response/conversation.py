@@ -16,6 +16,7 @@ class ConversationHandler(DirectHandler):
         self.max_len = max_len  # max length of each utterance
         self.history_len = history_len
         self.config = ConfigParser.config_dict['conversation']
+
         self.tokenizer = BertTokenizer(vocab_file=self.config['voca_path'])
         self.model = GPT2LMHeadModel.from_pretrained(self.config['dialogue_model'])
         self.mmi_model = GPT2LMHeadModel.from_pretrained(self.config['mmi_model'])
@@ -143,3 +144,8 @@ class ConversationHandler(DirectHandler):
             img_path, log_list = super().get_matched(target, log_list)
 
         return img_path, log_list
+
+
+if __name__ == '__main__':
+    config_init = ConfigParser('backend/config.yaml')
+    ch = ConversationHandler('cpu')

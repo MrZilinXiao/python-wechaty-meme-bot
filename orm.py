@@ -55,5 +55,7 @@ if __name__ == '__main__':
         print("Create Tables Successfully!")
     except IntegrityError as e:
         print("Init Database Error with Exception {}".format(str(e)))
+        raise e
     except Exception as e:
         print("Init Database Failed with Unknown Error: {}".format(str(e)))
+        raise e
