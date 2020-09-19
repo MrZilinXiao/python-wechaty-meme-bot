@@ -9,7 +9,7 @@ all: clean init
 
 .PHONY: clean
 clean:
-	rm -rf dist/*
+	rm -rf dist/* .pytest_cache/
 
 .PHONY: lint
 lint: pylint
@@ -31,8 +31,10 @@ init-db:
 
 .PHONY: run-backend
 run-backend:
+	pip3 install -r backend/requirements.txt
 	python3 backend/web_handler.py
 
 .PHONY: run-frontend
 run-frontend:
+	pip3 install -r frontend/requirements.txt
 	python3 frontend/main.py

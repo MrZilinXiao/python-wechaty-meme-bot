@@ -125,7 +125,7 @@ class RequestDispatcher(object):
         receive_img = np.array(receive_img)
         text_list = self.OCR.text_predict(receive_img)
         if text_list:  # there are OCR result(s)
-            log_list.append('有OCR结果，结果为{}'.format(' '.join(text_list)))
+            log_list.append('有OCR结果，结果为“{}”'.format(' '.join(text_list)))
             random.shuffle(
                 self.meme_list)  # shuffle meme_list before each request to avoid the situation where strategy always answers with the same image
             return self.conversation.get_matched(text_list, log_list)

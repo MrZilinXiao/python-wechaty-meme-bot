@@ -1,5 +1,5 @@
 from backend.response.dispatcher import DirectHandler
-from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
+from transformers.modeling_gpt2 import GPT2LMHeadModel
 from transformers import BertTokenizer
 from typing import List
 from backend.utils import ConfigParser
@@ -16,7 +16,6 @@ class ConversationHandler(DirectHandler):
         self.max_len = max_len  # max length of each utterance
         self.history_len = history_len
         self.config = ConfigParser.config_dict['conversation']
-
         self.tokenizer = BertTokenizer(vocab_file=self.config['voca_path'])
         self.model = GPT2LMHeadModel.from_pretrained(self.config['dialogue_model'])
         self.mmi_model = GPT2LMHeadModel.from_pretrained(self.config['mmi_model'])
@@ -38,6 +37,9 @@ class ConversationHandler(DirectHandler):
                 top_k > 0: keep only top k tokens with highest probability (top-k filtering).
                 top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
                     Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
+                    :param top_p: top_p probability
+                    :param top_k: top_k choice
+                    :param filter_value:
         """
         assert logits.dim() == 2
         top_k = min(top_k, logits[0].size(-1))  # Safety check
@@ -65,7 +67,7 @@ class ConversationHandler(DirectHandler):
         log_list = [] if not isinstance(log, list) else log
 
         input_text = ''.join(target)  # simply concat each string into sentence
-        log_list.append('对话输入为: {}'.format(input_text))
+        log_list.append('对话输入为: “{}”'.format(input_text))
         self.history.append(self.tokenizer.encode(input_text))
         input_ids = [self.tokenizer.cls_token_id]
         # add history, disable it if history_len = 1
@@ -129,7 +131,7 @@ class ConversationHandler(DirectHandler):
             loss = out[0].item()
             # for debug log
             response_text = self.tokenizer.convert_ids_to_tokens(res)
-            log_list.append("回复 “{}” Loss为 {:.2f}".format(response_text, loss))
+            log_list.append("回复 “{}” Loss为 {:.2f}".format(''.join(response_text), loss))
             if loss < min_loss:
                 best_response = res
                 min_loss = loss
@@ -138,8 +140,8 @@ class ConversationHandler(DirectHandler):
 
         # send to DirectHandler to search for memes
         # TODO: May need further tokenizer via HanLP
-        img_path, log_list = super().get_matched([best_response_text], log_list)
-        if log_list[-1].find('所有词均匹配无果') != -1:  # no match when using ConversationHandler, falling back to Direct
+        img_path, log_list = super().get_matched([''.join(best_response_text)], log_list)
+        if log_list[-1].find('所有词均匹配无果') != -1:  # no match when using ConversationHandler, falling back to DirectHandler
             log_list.append('数据库中没有找到对话系统匹配结果...使用传统方法...')
             img_path, log_list = super().get_matched(target, log_list)
 
@@ -149,3 +151,4 @@ class ConversationHandler(DirectHandler):
 if __name__ == '__main__':
     config_init = ConfigParser('backend/config.yaml')
     ch = ConversationHandler('cpu')
+    print(ch.config)

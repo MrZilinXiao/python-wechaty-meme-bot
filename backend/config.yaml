@@ -1,11 +1,11 @@
 general:  # general settings for backend
-  allow_img_extensions: ['.jpg', '.png', '.jpeg', '.gif']
+  allow_img_extensions: ('.jpg', '.png', '.jpeg', '.gif')
   stop_words_path: './backend/stopwords.txt'
   history_meme_path: './history/'
 
 backend:
   backend_post_url: '/meme/upload'
-  static_url_path: ''
+  static_url_path: '/static'
   static_folder: './backend/meme/'
 
 meme_import:

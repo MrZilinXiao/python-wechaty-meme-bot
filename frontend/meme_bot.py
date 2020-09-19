@@ -1,19 +1,20 @@
 import base64
+import time
 
 from requests.adapters import HTTPAdapter
-from wechaty_puppet import FileBox, ScanStatus  # type: ignore
+from wechaty_puppet import FileBox  # type: ignore
 from wechaty_puppet import MessageType
 
-from wechaty import Wechaty, Contact
-from wechaty.user import Message, Room
+from wechaty import Wechaty
+from wechaty.user import Message
 
 import requests
 from requests.packages.urllib3.util import Retry
 import os
-from frontend import config
 import hashlib
 import uuid
 from typing import List, Union
+import yaml
 
 
 class MemeBot(Wechaty):
@@ -23,12 +24,13 @@ class MemeBot(Wechaty):
         'image/png': '.png'
     }
 
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, config='config.yaml'):
         super(MemeBot, self).__init__()
         self.cache_dict = {}
         self.debug = debug
-        if not os.path.exists(config.image_temp_dir):
-            os.mkdir(config.image_temp_dir)
+        self.config_dict: dict = yaml.load(open(config, 'r'), Loader=yaml.FullLoader)
+        if not os.path.exists(self.config_dict['general']['image_temp_dir']):
+            os.mkdir(self.config_dict['general']['image_temp_dir'])
         else:
             self._load_cache()  # load meme images received earlier as cache
         self.s = requests.Session()
@@ -37,8 +39,8 @@ class MemeBot(Wechaty):
                          ['GET', 'POST']))))  # allow retry when encountering connection issue
 
     def _load_cache(self):
-        for img_file, _, _ in os.walk(config.image_temp_dir):  # type: str
-            if img_file.lower().endswith(config.allow_img_extensions):
+        for img_file, _, _ in os.walk(self.config_dict['general']['image_temp_dir']):  # type: str
+            if img_file.lower().endswith(eval(self.config_dict['general']['allow_img_extensions'])):
                 self.cache_dict[hashlib.md5(open(img_file, 'rb').read()).hexdigest()] = img_file
 
     async def msg_handler(self, msg: Message) -> dict:
@@ -63,12 +65,13 @@ class MemeBot(Wechaty):
             b64_str = base64.b64encode(ret.content)
             data_param.update(img_name=str(uuid.uuid4()) + MemeBot.content_type_mapping[ret.headers['Content-Type']],
                               data=b64_str)
-        ret_json = self.s.post(url=config.backend_upload_url, data=data_param).json()  # ret keys: img_name, md5, log
+        ret_json = self.s.post(url=self.config_dict['backend']['backend_upload_url'], data=data_param).json()  # ret keys: img_name, md5, log
         return ret_json
 
     async def on_message(self, msg: Message):
         if msg.is_self():  # for self testing
-            if msg.type() == MessageType.MESSAGE_TYPE_IMAGE or MessageType.MESSAGE_TYPE_EMOTICON:
+            if msg.type() == MessageType.MESSAGE_TYPE_IMAGE or msg.type() == MessageType.MESSAGE_TYPE_EMOTICON:
+                st_time = time.time()
                 ret_json = await self.msg_handler(msg)
                 # example returning json: {'img_name': '/001/001.jpg', 'md5': 'ff7bd2b664bf65962a924912bfd17507'}
                 if ret_json['md5'] in self.cache_dict:  # hit cache
@@ -76,17 +79,18 @@ class MemeBot(Wechaty):
                     if 'log' in ret_json:
                         ret_json['log'] += '\n回复图片命中缓存!'
                 else:
-                    ret_img = self.s.get(url=config.backend_static_url + ret_json['img_name'])
+                    ret_img = self.s.get(url=self.config_dict['backend']['backend_static_url'] + ret_json['img_name'])
                     if not str(ret_img.status_code).startswith('2'):  # not 2XX response code
                         raise FileNotFoundError(
                             "Can't get img from URL {}, with HTTP status code {}".format(
-                                config.backend_static_url + ret_json['img_name'], str(ret_img.status_code)))
-                    ret_path = os.path.join(config.image_temp_dir, str(uuid.uuid4()) + os.path.extsep +
+                                self.config_dict['backend']['backend_static_url'] + ret_json['img_name'], str(ret_img.status_code)))
+                    ret_path = os.path.join(self.config_dict['general']['image_temp_dir'], str(uuid.uuid4()) + os.path.extsep +
                                             ret_json['img_name'].split('.')[-1])
                     with open(ret_path, 'wb') as f:
                         f.write(ret_img.content)
                     self.cache_dict[ret_json['md5']] = ret_path
-                # ret_path = os.path.join(config.image_temp_dir, '0c4baea3-9792-4d07-8ec0-4fd62afd6117.jpg')
+                ret_json['log'] += '\n前后端交互耗时：%.2f' % (time.time() - st_time)
+
                 if self.debug and 'log' in ret_json:
                     await msg.say(ret_json['log'])
 

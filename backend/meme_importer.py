@@ -21,10 +21,9 @@ from backend.hanlp_wrapper import HanlpWrapper
 from backend.ocr_wrapper import OCRWrapper
 from orm import Meme
 from backend.feature_extract import InceptionExtractor, CosineMetricExtractor, NoneExtractor
-from backend.utils import Log
+from backend.utils import Log, ConfigParser
 from PIL import Image
 from torch.autograd import Variable
-from backend.config import *
 import numpy as np
 import time
 import torch
@@ -33,7 +32,8 @@ import os
 
 
 class BaseImporter(object):
-    def __init__(self, meme_path, ocr_type='mobilenetv2', extractor_type='inception', batch_size=16, num_workers=1):
+    def __init__(self, meme_path, ocr_type='mobilenetv2', extractor_type='inception', batch_size=16, num_workers=1, config_path='backend/config.yaml'):
+        self.config = ConfigParser(config_path)
         if not os.path.exists(meme_path):
             raise FileNotFoundError("{} doesn't exist!".format(meme_path))
         self.hanlp = HanlpWrapper()
@@ -42,9 +42,9 @@ class BaseImporter(object):
         else:
             raise NotImplementedError
         if extractor_type == 'inception':
-            self.extractor = InceptionExtractor(allow_img_extensions, batch_size)
+            self.extractor = InceptionExtractor(eval(ConfigParser.config_dict['general']['allow_img_extensions']), batch_size)
         elif extractor_type == 'cosine':
-            self.extractor = CosineMetricExtractor(allow_img_extensions, batch_size)
+            self.extractor = CosineMetricExtractor(eval(ConfigParser.config_dict['general']['allow_img_extensions']), batch_size)
         elif extractor_type == 'none':
             self.extractor = NoneExtractor()
         else:

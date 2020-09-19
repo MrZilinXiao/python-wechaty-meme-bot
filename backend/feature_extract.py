@@ -8,7 +8,6 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from backend import config
 from backend.cosine_metric_net import CosineMetricNet
 import collections
 
@@ -28,13 +27,14 @@ class FeatureExtractor(object):
     def is_image(self, filename: str):
         return filename.lower().endswith(self.img_extensions)
 
-    def init_dataloader(self, meme_path: str, num_workers: int = config.num_cores):
+    def init_dataloader(self, meme_path: str, num_workers: int = 1):
         """
         Init a torch.utils.data.Dataset instance for import use
         :param num_workers:
         :param meme_path:
         :return:
         """
+        # pylint:disable=C0415
         from backend.dataset import ImportDataset
         self.dataset = ImportDataset(meme_path, transforms=self.transforms)
         self.data_loader = DataLoader(self.dataset, batch_size=self.batch_size,

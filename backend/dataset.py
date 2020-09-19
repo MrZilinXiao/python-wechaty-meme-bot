@@ -2,8 +2,7 @@ import os
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from orm import Meme
-from backend.utils import Log
-from backend.config import *
+from backend.utils import Log, ConfigParser
 import torchvision.transforms as transforms
 
 
@@ -40,10 +39,10 @@ class ImportDataset(Dataset):
                     if Meme.get_or_none(path=img_path):
                         Log.info(img_path + " already in Database! ")
                         invalid_cnt += 1
-                        continue  # skip those already in database
-                    if not name.lower().endswith(allow_img_extensions):
+                        # continue  # skip those already in database
+                    if not name.lower().endswith(eval(ConfigParser.config_dict['general']['allow_img_extensions'])):
                         Log.info(name + " not supported, only " + str(
-                            allow_img_extensions) + " extensions supported for now.")
+                            ConfigParser.config_dict['general']['allow_img_extensions']) + " extensions supported for now.")
                         invalid_cnt += 1
                         continue
                     if title == 'others':   # if in others

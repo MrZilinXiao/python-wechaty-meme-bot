@@ -4,7 +4,6 @@ from abc import ABC
 
 from flask import Flask, request, jsonify, views
 from backend.response.dispatcher import RequestDispatcher
-import backend.config as config
 from backend.utils import ConfigParser
 import os
 import base64
@@ -21,10 +20,10 @@ class WebHandler:
         402: 'backend meme image missing!'
     }
 
-    def __init__(self):
-        self.config = ConfigParser()  # initialize ConfigParser for once
-        if not os.path.exists(config.history_meme_path):
-            os.mkdir(config.history_meme_path)
+    def __init__(self, config_path='backend/config.yaml'):
+        self.config_parser = ConfigParser(config_path)  # initialize ConfigParser for once
+        if not os.path.exists(ConfigParser.config_dict['general']['history_meme_path']):
+            os.mkdir(ConfigParser.config_dict['general']['history_meme_path'])
         if WebHandler.dispatcher is None:  # make sure RequestDispatcher only gets inited for once
             WebHandler.dispatcher = RequestDispatcher()
 
@@ -39,7 +38,7 @@ class WebHandler:
         return random_str
 
     def check_filename(self, filename: str) -> str:
-        intended_name = os.path.join(config.history_meme_path, filename)
+        intended_name = os.path.join(ConfigParser.config_dict['general']['history_meme_path'], filename)
         if not os.path.exists(intended_name):
             return intended_name
         else:
@@ -62,7 +61,7 @@ class WebView(views.View, ABC):
             return jsonify(web_handler.exception(400))
         try:
             img_name, img_b64data = request.form.get('img_name'), request.form.get('data')  # type: str, str
-            if not img_name.endswith(config.allow_img_extensions):
+            if not img_name.endswith(eval(ConfigParser.config_dict['general']['allow_img_extensions'])):
                 return jsonify(web_handler.exception(401))
             # decode b64data and save in history path
             data_buf = base64.b64decode(img_b64data)
@@ -87,9 +86,9 @@ class WebView(views.View, ABC):
 
 webview = WebView()
 
-meme_bot_front = Flask(__name__, static_url_path=config.static_url_path,
-                       static_folder=config.static_folder)
-meme_bot_front.add_url_rule(config.backend_post_url, view_func=webview.as_view('upload'))
+meme_bot_front = Flask(__name__, static_url_path=ConfigParser.config_dict['backend']['static_url_path'],
+                       static_folder=os.path.abspath(ConfigParser.config_dict['backend']['static_folder']))
+meme_bot_front.add_url_rule(ConfigParser.config_dict['backend']['backend_post_url'], view_func=webview.as_view('upload'))
 
 if __name__ == '__main__':
-    meme_bot_front.run(host='0.0.0.0', debug=True)
+    meme_bot_front.run(host='0.0.0.0', debug=False)
