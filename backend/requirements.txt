@@ -1,21 +1,14 @@
 hanlp==2.0.0a44
-# for NLP support
 peewee==3.13.3
-# for ORM support
-
 Pillow==7.1.2
 tqdm
-
-# for Chineseocr_lite
 scipy==1.2.1
 numpy
 opencv-python
 Cython
 torch==1.2.0
 torchvision==0.4.0
-
-# for unittest
+fuzzywuzzy
 pytest
-
 transformers
 python-Levenshtein
