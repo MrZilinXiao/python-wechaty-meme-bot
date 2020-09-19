@@ -16,6 +16,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.7]
+        model-gdrive-id: [17m3FkOl2CS79env_JdO11vzuGzLYRoA3]
+        model-zip-name: [meme-bot-models.zip]
+
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -23,18 +26,17 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r frontend/requirements.txt
         pip install -r backend/requirements.txt
-    - name: Download from Google Drive
-      uses: satackey/action-google-drive@v1
-      with:
-        skicka-tokencache-json: ${{ secrets.SKICKA_TOKENCACHE_JSON }}
-        download-from: /meme-bot-models.zip
-        download-to: ./
-    - name: Unzip Models
-      run: unzip meme-bot-models.zip ./backend
+
+    - name: Download Models from Google Drive & Unzip them
+      run: |
+        curl gdrive.sh | bash -s ${{ matrix.model-gdrive-id }}
+        unzip ${{ matrix.model-zip-name }} ./backend
+
     - name: Test
       run: make test
