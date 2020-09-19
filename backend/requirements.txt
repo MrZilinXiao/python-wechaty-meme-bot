@@ -2,7 +2,7 @@ hanlp==2.0.0a44
 peewee==3.13.3
 Pillow==7.1.2
 tqdm
-yaml
+pyyaml
 scipy==1.2.1
 numpy
 opencv-python
