@@ -1,6 +1,13 @@
 import pytest
 from backend.response.conversation import ConversationHandler
 from backend.response.dispatcher import DirectHandler
+from backend.meme_importer import BaseImporter
+
+
+def test_import():
+    # disable GPU-NICE
+    importer = BaseImporter(meme_path='./backend/meme/', num_workers=1, extractor_type='none')
+    importer.import_meme()
 
 
 def test_conversation_matched(conversation_handler: ConversationHandler):
