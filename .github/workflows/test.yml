@@ -36,7 +36,7 @@ jobs:
     - name: Download Models from Google Drive & Unzip them
       run: |
         curl gdrive.sh | bash -s ${{ matrix.model-gdrive-id }}
-        unzip ${{ matrix.model-zip-name }} ./backend
+        unzip -d ./backend ${{ matrix.model-zip-name }}
 
     - name: Test
       run: make test
