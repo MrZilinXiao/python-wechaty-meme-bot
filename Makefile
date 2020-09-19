@@ -23,7 +23,7 @@ test-unit:
 	pytest
 
 .PHONY: test
-test: test-unit
+test: init-db test-unit
 
 .PHONY: init-db
 init-db:
