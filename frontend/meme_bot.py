@@ -2,7 +2,7 @@ import base64
 import time
 
 from requests.adapters import HTTPAdapter
-from wechaty_puppet import FileBox  # type: ignore
+from wechaty_puppet import FileBox
 from wechaty_puppet import MessageType
 
 from wechaty import Wechaty
@@ -13,7 +13,7 @@ from requests.packages.urllib3.util import Retry
 import os
 import hashlib
 import uuid
-from typing import List, Union
+from typing import Dict
 import yaml
 
 
@@ -28,6 +28,8 @@ class MemeBot(Wechaty):
         super(MemeBot, self).__init__()
         self.cache_dict = {}
         self.debug = debug
+        if os.environ.get('WECHATY_MEME_BOT_CONFIG', None):
+            config = os.environ['WECHATY_MEME_BOT_CONFIG']
         self.config_dict: dict = yaml.load(open(config, 'r'), Loader=yaml.FullLoader)
         if not os.path.exists(self.config_dict['general']['image_temp_dir']):
             os.mkdir(self.config_dict['general']['image_temp_dir'])
@@ -38,12 +40,12 @@ class MemeBot(Wechaty):
                      HTTPAdapter(max_retries=Retry(total=3, method_whitelist=frozenset(
                          ['GET', 'POST']))))  # allow retry when encountering connection issue
 
-    def _load_cache(self):
+    def _load_cache(self) -> None:
         for img_file, _, _ in os.walk(self.config_dict['general']['image_temp_dir']):  # type: str
             if img_file.lower().endswith(eval(self.config_dict['general']['allow_img_extensions'])):
                 self.cache_dict[hashlib.md5(open(img_file, 'rb').read()).hexdigest()] = img_file
 
-    async def msg_handler(self, msg: Message) -> dict:
+    async def msg_handler(self, msg: Message) -> Dict[str, str]:
         """
         Handling different types of meme, MessageType.MESSAGE_TYPE_IMAGE or MessageType.MESSAGE_TYPE_EMOTICON
         :param msg: Message
@@ -89,7 +91,7 @@ class MemeBot(Wechaty):
                     with open(ret_path, 'wb') as f:
                         f.write(ret_img.content)
                     self.cache_dict[ret_json['md5']] = ret_path
-                ret_json['log'] += '\n前后端交互耗时：%.2f' % (time.time() - st_time)
+                ret_json['log'] += '\n前后端交互耗时：%.2fs' % (time.time() - st_time)
 
                 if self.debug and 'log' in ret_json:
                     await msg.say(ret_json['log'])

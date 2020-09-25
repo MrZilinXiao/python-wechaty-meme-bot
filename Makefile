@@ -40,3 +40,11 @@ run-backend:
 run-frontend:
 	pip3 install -r frontend/requirements.txt
 	python3 frontend/main.py
+
+.PHONY: dist
+dist:
+	cd frontend && bash pypi.sh && python3 setup.py sdist bdist_wheel
+
+.PHONY: publish
+publish:
+	cd frontend && python3 -m twine upload dist/*

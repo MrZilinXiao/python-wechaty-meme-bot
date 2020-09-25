@@ -1,7 +1,7 @@
-import pytest
 from backend.response.conversation import ConversationHandler
 from backend.response.dispatcher import DirectHandler
 from backend.meme_importer import BaseImporter
+import pytest
 
 
 def test_import():

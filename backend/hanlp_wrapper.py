@@ -1,8 +1,9 @@
 import hanlp
 
-from backend.utils import ConfigParser
+from backend.utils import ConfigParser, Singleton
 
 
+@Singleton
 class HanlpWrapper(object):
     def __init__(self):
         self.tokenizer = hanlp.load('PKU_NAME_MERGED_SIX_MONTHS_CONVSEG')

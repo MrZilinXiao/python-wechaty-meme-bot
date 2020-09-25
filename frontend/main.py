@@ -5,10 +5,10 @@ from frontend.meme_bot import MemeBot
 bot: Optional[MemeBot] = None
 
 
-async def main():
+async def main(debug=True):
     """doc"""
     global bot
-    bot = MemeBot(debug=True)
+    bot = MemeBot(debug=debug)
     await bot.start()
 
 if __name__ == '__main__':
