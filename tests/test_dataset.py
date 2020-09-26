@@ -19,7 +19,7 @@ def test_dataset_getter(dataset):
 
 
 def test_dataloader(dataset):
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=1, drop_last=True)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=0, drop_last=True)
     for mini_batch, data in enumerate(dataloader):
         m_img = data['m_img']
         title = data['title']
