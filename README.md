@@ -140,6 +140,27 @@ pip3 install -r backend/requirements.txt
 python backend/web_handler.py  # this will trigger chineseocrlite compiling process
 ```
 
+## Restful API Interface
+```
+URL: /meme/upload
+Method: POST
+```
+
+Request:
+
+| Parameter | Type | Description                                              |
+| --------- | ---- | -------------------------------------------------------- |
+| img_name  | str  | Filename of image, must end with a valid image extension |
+| data      | str  | Image data after base64 encoding                          |
+
+Response (in json format): 
+
+| Parameter | Type | Description                                                  |
+| --------- | ---- | ------------------------------------------------------------ |
+| img_name  | str  | Relative response meme image URL                             |
+| md5       | str  | MD5 hash value of response meme image, useful for cache strategy |
+| log       | str  | Log strings, will be attached onto response when debug is set to True |
+
 ## Open-Source Reference
 - [chineseocr_lite](https://github.com/ouyanghuiyu/chineseocr_lite/tree/master): Powerful Chinese OCR module with accurate results and fast inference.
 - [HaNLP](https://github.com/hankcs/HanLP): Multilingual NLP library for researchers and companies, built on TensorFlow 2.0.
