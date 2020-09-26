@@ -32,8 +32,9 @@ import os
 
 
 class BaseImporter(object):
-    def __init__(self, meme_path, ocr_type='mobilenetv2', extractor_type='inception', batch_size=16, num_workers=1, config_path='backend/config.yaml'):
+    def __init__(self, meme_path, ocr_type='mobilenetv2', extractor_type='inception', batch_size=16, num_workers=1, config_path='backend/config.yaml', max_count=np.Inf):
         self.config = ConfigParser(config_path)
+        self.max_count = max_count
         if not os.path.exists(meme_path):
             raise FileNotFoundError("{} doesn't exist!".format(meme_path))
         self.hanlp = HanlpWrapper()
@@ -66,6 +67,8 @@ class BaseImporter(object):
 
     def import_meme(self):
         for k, batched_data in enumerate(self.extractor.data_loader):
+            if k >= self.max_count:
+                return
             st_time = time.time()
             m_img = Variable(batched_data['m_img'])  # [batch_size, 3, 299, 299]
             title = batched_data['title']

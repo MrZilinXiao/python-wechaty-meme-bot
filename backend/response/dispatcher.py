@@ -46,9 +46,10 @@ class DirectHandler(BaseHandler):
     def __init__(self):
         super(DirectHandler, self).__init__()
 
-    def get_matched(self, target: List[str], log=None) -> (str, List[str]):
+    def get_matched(self, target: List[str], log=None, _random=True) -> (str, List[str]):
         log_list = [] if not isinstance(log, list) else log
         img_path = None
+        random.shuffle(self.meme_list)
         for kw in target:   # for each keyword in target list
             img_path = self._matched(kw)
             if img_path is None:
@@ -60,9 +61,11 @@ class DirectHandler(BaseHandler):
                     img_path = None
                 break
         if img_path is None:
-            log_list.append('所有词均匹配无果，随机返回一项表情...')
-            random.shuffle(self.meme_list)
-            return self.meme_list[0][0], log_list
+            if _random:
+                log_list.append('所有词均匹配无果，随机返回一项表情...')
+                return self.meme_list[0][0], log_list
+            else:
+                return None, log_list
         return img_path, log_list
 
     def _matched(self, target: str) -> Union[str, None]:
@@ -129,7 +132,7 @@ class RequestDispatcher(object):
             log_list.append('有OCR结果，结果为“{}”'.format(' '.join(text_list)))
             # random.shuffle(
             #    self.meme_list)  # shuffle meme_list before each request to avoid the situation where strategy always answers with the same image
-            return self.conversation.get_matched(text_list, log_list)
+            return self.conversation.get_matched(text_list, log_list, )
         else:
             pass  # TODO: should be dispatched to backend.response.feature
 

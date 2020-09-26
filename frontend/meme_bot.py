@@ -67,14 +67,22 @@ class MemeBot(Wechaty):
             b64_str = base64.b64encode(ret.content)
             data_param.update(img_name=str(uuid.uuid4()) + MemeBot.content_type_mapping[ret.headers['Content-Type']],
                               data=b64_str)
-        ret_json = self.s.post(url=self.config_dict['backend']['backend_upload_url'], data=data_param).json()  # ret keys: img_name, md5, log
+        ret_json = self.s.post(url=self.config_dict['backend']['backend_upload_url'],
+                               data=data_param).json()  # ret keys: img_name, md5, log
         return ret_json
 
     async def on_message(self, msg: Message):
         if msg.is_self():  # for self testing
             if msg.type() == MessageType.MESSAGE_TYPE_IMAGE or msg.type() == MessageType.MESSAGE_TYPE_EMOTICON:
                 st_time = time.time()
-                ret_json = await self.msg_handler(msg)
+                try:
+                    ret_json = await self.msg_handler(msg)
+                except KeyError as e:  # echoing meme image have no keys
+                    print(str(e))
+                    return
+                except (requests.exceptions.ConnectionError or requests.exceptions.ConnectTimeout) as e:
+                    await msg.say('访问后端出错：' + str(e))
+                    return
                 # example returning json: {'img_name': '/001/001.jpg', 'md5': 'ff7bd2b664bf65962a924912bfd17507'}
                 if ret_json['md5'] in self.cache_dict:  # hit cache
                     ret_path: str = self.cache_dict[ret_json['md5']]
@@ -85,8 +93,10 @@ class MemeBot(Wechaty):
                     if not str(ret_img.status_code).startswith('2'):  # not 2XX response code
                         raise FileNotFoundError(
                             "Can't get img from URL {}, with HTTP status code {}".format(
-                                self.config_dict['backend']['backend_static_url'] + ret_json['img_name'], str(ret_img.status_code)))
-                    ret_path = os.path.join(self.config_dict['general']['image_temp_dir'], str(uuid.uuid4()) + os.path.extsep +
+                                self.config_dict['backend']['backend_static_url'] + ret_json['img_name'],
+                                str(ret_img.status_code)))
+                    ret_path = os.path.join(self.config_dict['general']['image_temp_dir'],
+                                            str(uuid.uuid4()) + os.path.extsep +
                                             ret_json['img_name'].split('.')[-1])
                     with open(ret_path, 'wb') as f:
                         f.write(ret_img.content)
@@ -99,4 +109,10 @@ class MemeBot(Wechaty):
                 with open(ret_path, 'rb') as f:
                     content: str = base64.b64encode(f.read())
                     ret_img = FileBox.from_base64(name=os.path.basename(ret_path), base64=content)
+                    # file_box = FileBox.from_url(
+                    #     'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/'
+                    #     'u=1116676390,2305043183&fm=26&gp=0.jpg',
+                    #     name='ding-dong.jpg')
+                    # await msg.say(file_box)
+                    # ret_img = FileBox.from_file(ret_path)
                     await msg.say(ret_img)

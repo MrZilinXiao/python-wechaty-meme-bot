@@ -6,7 +6,7 @@ import pytest
 
 def test_import():
     # disable GPU-NICE
-    importer = BaseImporter(meme_path='./backend/meme/', num_workers=1, extractor_type='none')
+    importer = BaseImporter(meme_path='./backend/meme/', num_workers=1, extractor_type='none', max_count=1)
     importer.import_meme()
 
 

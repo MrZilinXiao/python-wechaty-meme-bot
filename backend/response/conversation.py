@@ -2,7 +2,7 @@ from backend.hanlp_wrapper import HanlpWrapper
 from backend.response.dispatcher import DirectHandler
 from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
 from transformers import BertTokenizer
-from typing import List
+from typing import List, Tuple
 from backend.utils import ConfigParser
 import copy
 import torch
@@ -65,7 +65,7 @@ class ConversationHandler(DirectHandler):
                 logit[indices_to_remove] = filter_value
         return logits
 
-    def get_matched(self, target: List[str], log=None) -> (str, List[str]):
+    def get_matched(self, target: List[str], log=None, _random=True) -> (str, List[str]):
         log_list = [] if not isinstance(log, list) else log
 
         input_text = ''.join(target)  # simply concat each string into sentence
@@ -120,6 +120,7 @@ class ConversationHandler(DirectHandler):
         log_list.append("候选回复:")
         min_loss = float('Inf')
         best_response = ""
+        candidate_tuple: List[Tuple[str, float]] = list()
         for res in candidate_response:
             mmi_input_id = [self.tokenizer.cls_token_id]
             mmi_input_id.extend(res)
@@ -134,17 +135,21 @@ class ConversationHandler(DirectHandler):
             # for debug log
             response_text = self.tokenizer.convert_ids_to_tokens(res)
             log_list.append("回复 “{}” Loss为 {:.2f}".format(''.join(response_text), loss))
+            candidate_tuple.append((''.join(response_text), float(loss)))
             if loss < min_loss:
                 best_response = res
                 min_loss = loss
         self.history.append(best_response)
-        best_response_text = self.tokenizer.convert_ids_to_tokens(best_response)
+        # best_response_text = self.tokenizer.convert_ids_to_tokens(best_response)
 
         # send to DirectHandler to search for memes
-        # TODO: May need further tokenized via HanLP
+        img_path = None
+        for candidate_response_text, candidate_loss in sorted(candidate_tuple, key=lambda x: x[1]):  # 按loss升序顺序查找
+            img_path, log_list = super().get_matched([''.join(candidate_response_text)], log_list, _random=False)
+            if img_path is not None:
+                break
         # img_path, log_list = super().get_matched([''.join(best_response_text)], log_list)
-        img_path, log_list = super().get_matched(self.hanlp.Tokenizer(''.join(best_response_text)), log_list)
-        if log_list[-1].find('所有词均匹配无果') != -1:  # no match when using ConversationHandler, falling back to DirectHandler
+        if img_path is None:  # no match when using ConversationHandler, falling back to DirectHandler
             log_list.append('数据库中没有找到对话系统匹配结果...使用传统方法...')
             img_path, log_list = super().get_matched(target, log_list)
 
