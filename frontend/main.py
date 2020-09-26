@@ -11,8 +11,13 @@ async def main(debug=True):
     bot = MemeBot(debug=debug)
     await bot.start()
 
-if __name__ == '__main__':
+
+def start():
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == '__main__':
+    start()

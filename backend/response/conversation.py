@@ -1,5 +1,6 @@
+from backend.hanlp_wrapper import HanlpWrapper
 from backend.response.dispatcher import DirectHandler
-from transformers.modeling_gpt2 import GPT2LMHeadModel
+from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
 from transformers import BertTokenizer
 from typing import List
 from backend.utils import ConfigParser
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 
 
 class ConversationHandler(DirectHandler):
-    def __init__(self, device='cuda', history_len=0, batch_size=5, max_len=25,
+    def __init__(self, device='cuda', history_len=1, batch_size=5, max_len=25,
                  penalty=1.0, temperature=1):
         super(ConversationHandler, self).__init__()
         self.device = device
@@ -17,6 +18,7 @@ class ConversationHandler(DirectHandler):
         self.history_len = history_len
         self.config = ConfigParser.config_dict['conversation']
         self.tokenizer = BertTokenizer(vocab_file=self.config['voca_path'])
+        self.hanlp = HanlpWrapper()  # not going to inited twice since it's a Singleton
         self.model = GPT2LMHeadModel.from_pretrained(self.config['dialogue_model'])
         self.mmi_model = GPT2LMHeadModel.from_pretrained(self.config['mmi_model'])
         # move both models to specific device
@@ -139,8 +141,9 @@ class ConversationHandler(DirectHandler):
         best_response_text = self.tokenizer.convert_ids_to_tokens(best_response)
 
         # send to DirectHandler to search for memes
-        # TODO: May need further tokenizer via HanLP
-        img_path, log_list = super().get_matched([''.join(best_response_text)], log_list)
+        # TODO: May need further tokenized via HanLP
+        # img_path, log_list = super().get_matched([''.join(best_response_text)], log_list)
+        img_path, log_list = super().get_matched(self.hanlp.Tokenizer(''.join(best_response_text)), log_list)
         if log_list[-1].find('所有词均匹配无果') != -1:  # no match when using ConversationHandler, falling back to DirectHandler
             log_list.append('数据库中没有找到对话系统匹配结果...使用传统方法...')
             img_path, log_list = super().get_matched(target, log_list)

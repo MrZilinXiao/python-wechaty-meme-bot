@@ -61,6 +61,7 @@ class DirectHandler(BaseHandler):
                 break
         if img_path is None:
             log_list.append('所有词均匹配无果，随机返回一项表情...')
+            random.shuffle(self.meme_list)
             return self.meme_list[0][0], log_list
         return img_path, log_list
 
@@ -76,7 +77,7 @@ class DirectHandler(BaseHandler):
         return None
 
     @staticmethod
-    def _get_close_matches(target: str, src: Union[List[str], str], top_similarity: int = 1, cutoff: float = 0.6):
+    def _get_close_matches(target: str, src: Union[List[str], str], top_similarity: int = 1, cutoff: float = 0.5):
         """
         Wrapper of difflib/fuzzywuzzy for close matches
         :param target: target string you want to match
@@ -109,7 +110,7 @@ class RequestDispatcher(object):
     def __init__(self, ocr_backbone='mobilenetv2'):
         from backend.response.conversation import ConversationHandler
         self.OCR = OCRWrapper(ocr_backbone)
-        self.meme_list = []  # [path, title, [tag1, tag2, ...]]
+        # self.meme_list = []  # [path, title, [tag1, tag2, ...]]
         self.conversation = ConversationHandler()
 
     def receive_handler(self, img_path: str) -> (str, list):
@@ -126,8 +127,8 @@ class RequestDispatcher(object):
         text_list = self.OCR.text_predict(receive_img)
         if text_list:  # there are OCR result(s)
             log_list.append('有OCR结果，结果为“{}”'.format(' '.join(text_list)))
-            random.shuffle(
-                self.meme_list)  # shuffle meme_list before each request to avoid the situation where strategy always answers with the same image
+            # random.shuffle(
+            #    self.meme_list)  # shuffle meme_list before each request to avoid the situation where strategy always answers with the same image
             return self.conversation.get_matched(text_list, log_list)
         else:
             pass  # TODO: should be dispatched to backend.response.feature
