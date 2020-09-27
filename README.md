@@ -22,7 +22,7 @@ I was required to build a meme bot based on [python-wechaty](https://github.com/
 - response meme image accordingly based on analysis given above
 
 To achieve such requirements, I came out with a cross-functional diagram below to assist my development(written in Chinese):
-![](https://upyun.mrxiao.net/img/Drawing4.svg)
+![](https://upyun.mrxiao.net/img/flow-chart1.svg)
 
 ## Some Concepts
 1. Frontend: Run on user end, be in charge of communicating with python-wechaty-puppet and backend, acting as a middleware.
@@ -102,9 +102,13 @@ $ tree -L 3 -I '__pycache__'
 git clone https://github.com/MrZilinXiao/python-wechaty-meme-bot.git
 ```
 ### Frontend
-#### Via PyPi (Pending...)
+#### Via PyPi
 ```shell script
 pip3 install wechaty-meme-bot
+export WECHATY_PUPPET=wechaty-puppet-hostie
+export WECHATY_PUPPET_HOSTIE_TOKEN=your-donut-token
+export WECHATY_MEME_BOT_CONFIG='./config.yaml'  # add your config file to `WECHATY_MEME_BOT_CONFIG`
+python3 -m wechaty_meme_bot.main
 ```
  
 #### Manually
