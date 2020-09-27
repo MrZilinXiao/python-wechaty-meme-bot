@@ -9,9 +9,9 @@
 [![Wechaty](/image/wechaty-logo.svg)](https://github.com/wechaty/wechaty)
 [![summerofcode](/image/summer2020.svg)](https://isrc.iscas.ac.cn/summer2020/)
 
-PowerPoint Demonstration: [https://www.bilibili.com/video/BV1kZ4y1M7F6/](https://www.bilibili.com/video/BV1kZ4y1M7F6/)
+Final PowerPoint Demonstration: [https://www.bilibili.com/video/BV18f4y1D7GN](https://www.bilibili.com/video/BV18f4y1D7GN)
 
-Demo Live Video on bilibili: [https://www.bilibili.com/video/BV17f4y197ut/](https://www.bilibili.com/video/BV17f4y197ut/)
+Final Demo Video on bilibili: [https://www.bilibili.com/video/BV14A411J783](https://www.bilibili.com/video/BV14A411J783)
 
 My community mentor is [Huang](https://github.com/huangaszaq), contributor of python-wechaty. I won't make such progress without his support.
 
