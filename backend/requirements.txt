@@ -1,6 +1,6 @@
 hanlp==2.0.0a44
 peewee==3.13.3
-Pillow==7.1.2
+Pillow==8.2.0
 tqdm
 pyyaml
 scipy==1.2.1
